@@ -1,0 +1,22 @@
+{
+  "scene_id": "livingroom_001",
+  "room": {"w":4.0, "d":5.0, "h":2.8, "units":"m"},
+  "objects": [
+    {
+      "id":"chair_0001",
+      "category":"chair",
+      "asset":"assets/chair_0001.glb",
+      "bbox":[0.45,0.9,0.75],
+      "anchor":[0,0,0],          // local anchor (e.g. mesh floor center) in mesh coords
+      "up":[0,1,0],
+      "forward":[0,0,1],
+      "placement":{
+         "position":[1.2,0,0.8],
+         "rotation":[0,0,0],     // Euler yaw,pitch,roll or quaternion
+         "scale": [1,1,1]
+      },
+      "snap_policy":"floor|align_front_to_dir"
+    }
+  ],
+  "metadata": { "units":"meters", "coordinate_system":"Y-up" }
+}
