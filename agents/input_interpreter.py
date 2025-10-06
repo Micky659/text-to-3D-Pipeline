@@ -40,18 +40,20 @@ Return ONLY valid JSON that parses to this schema:
 {{
   "intent": "generate" | "edit" | "query",
   "room": {{ "w": float, "d": float, "h": float}},  
-  "objects": [{{ "category": string, "count": int, "preferred_bbox": [w,d,h] | null, "constraints": string | null }}],
+  "objects": [{{ "category": string, "count": int, "preferred_bbox": [w,d,h] | null }}],
   "style": string | null,
   "relationships": string | null,
   "scene_id": string | null
 }}
 
-Available categories (exact tokens): 
+Available categories: 
 {categories_table}
 
 Rules:
-- If the user mentions room size (e.g. '5m x 4m' or '10ft by 12ft'), parse it into meters (1ft=0.3048m). If no size given, propose values based on request.
-- Map object nouns to the available categories. If a noun doesn't match exactly, pick the closest category and put original noun in constraints.
+- If the user mentions room size, parse it into meters (e.g. '5m x 4m'). If no size given, propose values based on request. Always prefer a very big room size.
+- Choose object names from available categories.
+- If no style is suggested propose one based on the request.
+- Add relationships based on the chosen objects.
 - For 'edit' intent, ensure scene_id is populated if the user mentions it.
 - Output counts as integers.
 - No extra explanation — JSON only.
@@ -120,7 +122,6 @@ User input:
             scene_id=parsed.get("scene_id"),
             raw_llm_output=raw
         )
-        print(intent)
         return interp
         # except Exception as exc:
         #     # fallback: simple heuristic parse

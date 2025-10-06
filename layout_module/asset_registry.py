@@ -28,5 +28,8 @@ def categories_table_text(cat_map: Dict = None) -> str:
     cat_map = cat_map or DEFAULT_CATEGORIES
     lines = []
     for k,v in cat_map.items():
-        lines.append(f"{k}: bbox={v['bbox']}, forward={v['forward']}, up={v['up']}")
+        try:
+            lines.append(f"{k}: bbox={v['bbox']}, forward={v['forward']}, up={v['up']}")
+        except:
+            lines.append(f"{k}: bbox={v['bbox']}")
     return "\n".join(lines)

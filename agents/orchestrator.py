@@ -1,50 +1,178 @@
 # agents/orchestrator.py
 from layout_module.llm_client import LLMClient
-from layout_module.models import Room
-from layout_module.utils import save_manifest
-from layout_module.utils import load_manifest
+from layout_module.models import Room, SceneManifest
+from layout_module.utils import save_manifest, load_manifest
 from layout_module.asset_registry import load_categories
-from layout_module.agents import LayoutPlannerAgent  # the planner we wrote earlier
+from layout_module.agents import LayoutPlannerAgent, SceneEditorAgent
+from layout_module.config import settings
 from .input_interpreter import InputInterpreterAgent, Interpretation, Intent
+from mesh_generator.generator import MeshGenerator
 import uuid
+import time
+from pathlib import Path
 import os
 
+
 class Orchestrator:
-    def __init__(self, llm_base_url=None, llm_model=None, categories_path=None):
-        self.llm_client = LLMClient(base_url=llm_base_url, model=llm_model)
+    def __init__(self, llm_mode, categories_path):
+        self.llm_client = LLMClient(llm_mode=llm_mode)
         self.interpreter = InputInterpreterAgent(self.llm_client, category_path=categories_path)
         self.layout_planner = LayoutPlannerAgent(self.llm_client, categories=load_categories(categories_path))
+        self.mesh_generator = MeshGenerator()
+        self.scene_editor = SceneEditorAgent(self.llm_client, categories_path)
 
     def handle_request(self, user_text: str, scene_id: str = None, save_to: str = None):
         interp: Interpretation = self.interpreter.interpret(user_text)
         print("INTERPRETATION:", interp.model_dump_json(indent=2))
         if interp.intent == Intent.GENERATE:
-            # convert room to Room pydantic; if auto, default to heuristics
-            room_dict = interp.room or {"w":"auto","d":"auto","h":"auto"}
-            if room_dict.get("w") == "auto" or room_dict.get("d") == "auto" or room_dict.get("h") == "auto":
-                # Heuristic defaults per style/scene scale
-                room_defaults = {"w":6.0, "d":8.0, "h":3.5}
+            room_dict = interp.room or {"w": "auto", "d": "auto", "h": "auto"}
+            if room_dict.get("w") == "auto":
+                room_defaults = {"w": 6.0, "d": 8.0, "h": 3.5}
             else:
-                room_defaults = {"w":float(room_dict.get("w",6.0)), "d":float(room_dict.get("d",8.0)), "h":float(room_dict.get("h",3.0))}
+                room_defaults = {"w": float(room_dict.get("w", 6.0)), "d": float(room_dict.get("d", 8.0)),
+                                 "h": float(room_dict.get("h", 3.0))}
             room = Room(**room_defaults)
-            # build request list flattening counts
             req_list = []
             for o in interp.objects:
                 for i in range(o.count):
                     req_list.append(o.category)
-            # relationships pass-through
             relationships = interp.relationships or ""
             scene_id = scene_id or interp.scene_id or f"scene_{uuid.uuid4().hex[:6]}"
-            manifest = self.layout_planner.plan(scene_id, room, req_list, relationships=relationships, style=interp.style or "default")
-            out_path = save_manifest(manifest)
-            return {"status":"ok", "manifest_path": str(out_path)}
+            res = self.layout_planner.plan(scene_id, room, req_list, relationships=relationships,
+                                           style=interp.style or "default")
+            if not res.get("ok"):
+                # failed to produce valid layout
+                return {"status": "error", "reason": "layout_generation_failed", "details": res.get("error")}
+            print("LAYOUT: ", res)
+            manifest = res["manifest"]
+
+            # Generate assets (unique categories only) and annotate manifest
+            unique_cats = {}
+            for obj in manifest.objects:
+                cat = obj.category
+                if cat not in unique_cats:
+                    print(f"Requesting generation for category: {cat}")
+                    try:
+                        asset_info = self.mesh_generator.generate_asset(cat, text=cat, scene_id=scene_id, reuse=True)
+                        unique_cats[cat] = asset_info
+                    except Exception as e:
+                        print("Generation failed for", cat, e)
+                        unique_cats[cat] = None
+
+            # Attach asset_path & metadata to each placement instance
+            for obj in manifest.objects:
+                info = unique_cats.get(obj.category)
+                if info:
+                    # add fields to Placement by turning model to dict first or using .dict()/update
+                    # we'll attach extras in manifest.metadata -> but simplest: append fields to object dict
+                    obj_dict = obj.model_dump()
+                    obj_dict["asset"] = info["asset_path"]
+                    obj_dict["metadata"] = info.get("metadata", {})
+                    # replace object entry (we must reconstruct placements list)
+                    # we'll collect modified and reassign below
+                else:
+                    obj_dict = obj.model_dump()
+                    obj_dict["asset"] = None
+                    obj_dict["metadata"] = {}
+
+            # Rebuild manifest.objects as list of dicts
+            new_objs = []
+            for obj in manifest.objects:
+                info = unique_cats.get(obj.category)
+                objd = obj.model_dump()
+                if info:
+                    objd["asset"] = info["asset_path"]
+                    objd["metadata"] = info.get("metadata", {})
+                else:
+                    objd["asset"] = None
+                    objd["metadata"] = {}
+                new_objs.append(objd)
+            manifest_dict = manifest.model_dump()
+            manifest_dict["objects"] = new_objs
+
+            # Save the manifest JSON (use utils.save_manifest but convenience: write file)
+            out_path = save_manifest(manifest)  # note: this saves original manifest; prefer to save modified manifest
+            # overwrite with modified manifest
+            import json
+            out_file = out_path.parent / out_path.name
+            with open(out_file, "w") as f:
+                json.dump(manifest_dict, f, indent=2)
+
+            return {"status": "ok", "manifest_path": str(out_file)}
+
         elif interp.intent == Intent.EDIT:
-            # For edit intent, try to load scene_id and produce an edit plan
+            # require scene_id
             if not interp.scene_id:
-                return {"status":"error", "reason":"no scene_id provided for edit intent"}
-            # load manifest and apply simple edit instructions or return interpreted edit actions
-            existing = load_manifest(os.path.join("output", f"{interp.scene_id}_scene_manifest.json"))
-            # For now we return the interpreted edit actions so assembly module can apply them.
-            return {"status":"ok", "scene_id": interp.scene_id, "edit_plan": interp.model_dump()}
-        else:
-            return {"status":"ok", "message":"query received", "interpretation": interp.model_dump()}
+                return {"status": "error", "reason": "no_scene_id_for_edit"}
+            # load existing manifest
+            existing_manifest = load_manifest(Path(settings.OUTPUT_DIR) / f"{interp.scene_id}_scene_manifest.json")
+            edit_instruction = interp.raw_text if hasattr(interp, "raw_text") else interp.user_text
+            edit_res = self.scene_editor.edit(existing_manifest.dict(), edit_instruction)
+            if not edit_res.get("ok"):
+                return {"status": "error", "reason": "edit_failed", "details": edit_res.get("error")}
+            updated_manifest = edit_res["manifest"]
+            if "metadata" not in updated_manifest:
+                updated_manifest["metadata"] = {}
+            if "provenance" not in updated_manifest["metadata"]:
+                updated_manifest["metadata"]["provenance"] = []
+
+            scene_dir = Path("raw_meshes") / interp.scene_id
+            scene_dir.mkdir(parents=True, exist_ok=True)
+
+            for obj in updated_manifest.get("objects", []):
+                placement_id = obj.get("id")
+                regenerate_flag = bool(obj.get("regenerate", False))
+                texture_input = obj.get("retexture_input", None)
+
+                if regenerate_flag:
+                    # record previous asset (if exists)
+                    prev_asset = obj.get("asset", None)
+                    try:
+                        # Use a higher temperature for regeneration to add variation
+                        regen_info = self.mesh_generator.generate_asset(obj.get("category"), text=obj.get("category"),
+                                                                        scene_id=interp.scene_id, reuse=False,
+                                                                        temperature=0.15)
+                        # Update object asset and metadata with new values
+                        new_asset = regen_info.get("asset_path")
+                        new_meta = regen_info.get("metadata", {})
+                        obj["asset"] = new_asset
+                        obj["metadata"] = new_meta
+                        # record provenance
+                        updated_manifest["metadata"]["provenance"].append({
+                            "timestamp": time.time(),
+                            "placement_id": placement_id,
+                            "action": "regenerated",
+                            "category": obj.get("category"),
+                            "prev_asset": prev_asset,
+                            "new_asset": new_asset
+                        })
+                    except Exception as e:
+                        # if generation failed, add error provenance and flag note on object
+                        obj.setdefault("notes", "")
+                        obj["notes"] += f" | regeneration_failed: {e}"
+                        updated_manifest["metadata"]["provenance"].append({
+                            "timestamp": time.time(),
+                            "placement_id": placement_id,
+                            "action": "regeneration_failed",
+                            "error": str(e)
+                        })
+
+
+                # Record texture_input into object metadata if present
+                if texture_input:
+                    meta = obj.get("metadata", {}) or {}
+                    meta["retexture_input"] = texture_input
+                    obj["metadata"] = meta
+                    # provenance record for texture request
+                    updated_manifest["metadata"]["provenance"].append({
+                        "timestamp": time.time(),
+                        "placement_id": placement_id,
+                        "action": "texture_requested",
+                        "retexture_input": texture_input
+                    })
+
+            # save updated manifest
+            # build pydantic manifest object
+            scene_manifest_obj = SceneManifest.model_validate(updated_manifest)
+            out_path = save_manifest(scene_manifest_obj)
+            return {"status": "ok", "manifest_path": str(out_path)}

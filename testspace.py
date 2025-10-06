@@ -1,91 +1,49 @@
+import requests
 import json
-from layout_module.asset_registry import load_categories, categories_table_text
+from openai import OpenAI
 
 
-data = '''{
-  "intent": "generate",
-  "room": {
-    "w": 7.315,
-    "d": 3.048,
-    "h": 2.4
-  },
-  "objects": [
-    {
-      "category": "bench",
-      "count": 6,
-      "constraints": null,
-      "preferred_bbox": [1.8, 0.9, 0.75]
-    },
-    {
-      "category": "plant",
-      "count": 3,
-      "constraints": null,
-      "preferred_bbox": [null, null, null]
-    },
-    {
-      "category": "desk",
-      "count": 1,
-      "constraints": null,
-      "preferred_bbox": [1.8, 0.4, 2.4]
+LLM_Deep = True
+
+if LLM_Deep:
+    client = OpenAI(api_key="sk-d3a04397262d4362b6cbd6fc6b6e5172", base_url="https://api.deepseek.com")
+
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant"},
+            {"role": "user", "content": "This is a test, respond with 3 lines of text"},
+        ],
+        stream=False
+    )
+
+    print(response.choices[0].message.content)
+else:
+    body = {
+        "model": "llama3.1:8b",
+        "prompt": "Create a difficult problem for an LLM evaluation that matches the complexity of a layout generation with multiple objects and constraints.",
+        # "max_tokens": max_tokens,
+        "temperature": 0,
+        # If Ollama endpoint expects different names, edit here.
     }
-  ],
-  "style": null,
-  "relationships": null,
-  "scene_id": null
-}
-'''
+    resp = requests.post("http://localhost:11434/api/generate", json=body, timeout=120)
+    resp.raise_for_status()
 
-data = str(data)
-
-category_path = ""
-categories = load_categories(category_path)
-categories_table = categories_table_text(categories)
-
-parsed = json.loads(data)
-# normalize intent
-intent = parsed.get("intent", "generate")
-if isinstance(intent, str):
-    intent = intent.lower()
-if intent not in ("generate", "edit", "query"):
-    intent = "generate"
-# normalize room -> ensure numeric or "auto"
-room = parsed.get("room", {})
-
-
-# coerce numbers and convert feet if present
-def _norm_room_field(v):
-    if isinstance(v, str) and ("ft" in v or "'" in v):
-        # remove ft/symbols then convert
-        import re
-        num = float(re.sub(r"[^\d\.]", "", v))
-        return num * 0.3048
-    if isinstance(v, (int, float)):
-        return float(v)
-    if isinstance(v, str) and v == "auto":
-        return "auto"
-    return "auto"
-
-
-room_norm = {}
-for k in ("w", "d", "h"):
-    room_norm[k] = _norm_room_field(room.get(k, "auto"))
-# build objects
-objs = []
-for o in parsed.get("objects", []):
-    cat = o.get("category")
-    if cat not in categories:
-        # attempt fuzzy match: find category that contains cat substring
-        match = None
-        for c in categories.keys():
-            if cat and cat.lower() in c.lower():
-                match = c
+    responses = []
+    for line in resp.iter_lines():
+        print(line)
+        if line:
+            obj = json.loads(line.decode("utf-8"))
+            if obj.get("done"):
                 break
-        cat = match or cat
-    objs.append({
-        "category": cat,
-        "count": int(o.get("count", 1)),
-        "preferred_bbox": o.get("preferred_bbox", None),
-        "constraints": o.get("constraints", None)
-    })
+            responses.append(obj)
 
-    print(objs)
+    # Join all text parts from the stream
+    output = "".join([o["response"] for o in responses])
+    print(output)
+
+    start = output.find("{")
+    end = output.rfind("}") + 1
+    data = output[start:end]
+
+    print(data)

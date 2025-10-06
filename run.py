@@ -8,13 +8,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--text", type=str, help="Natural language scene request", required=True)
     parser.add_argument("--scene_id", type=str, default=None)
-    parser.add_argument("--llm_url", type=str, default=None)
-    parser.add_argument("--llm_model", type=str, default=None)
-    parser.add_argument("--categories_json", type=str, default=None)
+    parser.add_argument("--llm_mode", type=str, default="deepseek")
+    parser.add_argument("--categories_json", type=str, default='static/categories_metadata.json')
     args = parser.parse_args()
 
-    orchestrator = Orchestrator(llm_base_url=args.llm_url or settings.LLM_BASE_URL,
-                                llm_model=args.llm_model or settings.LLM_MODEL,
+    orchestrator = Orchestrator(llm_mode=args.llm_mode,
                                 categories_path=args.categories_json)
 
     resp = orchestrator.handle_request(args.text, scene_id=args.scene_id)
@@ -22,3 +20,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
