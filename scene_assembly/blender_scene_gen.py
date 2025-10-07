@@ -497,7 +497,7 @@ for p in objects:
     # Position and rotate
     anchor = meta.get("anchor", [0.0, 0.0, 0.0])
     anchor_b = anchor_to_blender(anchor)
-    pos = manifest_to_blender(p["position"])
+    pos = manifest_to_blender([p["position"][0],p["position"][1],p["position"][2]])
     yaw = p.get("rotation_yaw", 0.0)
     yaw_r = yaw_to_blender_z(yaw)
 
