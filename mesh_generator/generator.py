@@ -1,4 +1,3 @@
-# mesh_generator/generator.py
 import torch
 from pathlib import Path
 from .config import settings
@@ -6,7 +5,7 @@ from .utils import save_obj_from_coords, load_mesh, compute_metadata
 from .data_scripts import mesh_render
 import os
 import shutil
-import time
+import datetime
 import glob
 import trimesh
 
@@ -22,13 +21,12 @@ class MeshGenerator:
         self._load_models()
 
     def _load_models(self):
-        # Lazy import of repo model classes, assumes model code is importable from your project
         from mesh_generator.model_scripts.autoencoder import MeshAutoencoder
         from mesh_generator.model_scripts.transformer import MeshTransformer
 
         print("Loading autoencoder from", self.autoencoder_path)
         ae_pkg = torch.load(str(self.autoencoder_path), map_location=self.device)
-        # configure autoencoder with same args used in training; if different, adjust accordingly
+        # configure autoencoder with same args used in training
         self.autoencoder = MeshAutoencoder(
             decoder_dims_through_depth=(128,) * 6 + (192,) * 12 + (256,) * 24 + (384,) * 6,
             codebook_size=16384,
@@ -45,7 +43,7 @@ class MeshGenerator:
 
         print("Loading transformer from", self.transformer_path)
         tr_pkg = torch.load(str(self.transformer_path), map_location=self.device)
-        # instantiate transformer (params must match saved model)
+        # instantiate transformer (IMPORTANT: params must match saved model)
         self.transformer = MeshTransformer(
             self.autoencoder,
             dim=768,
@@ -70,7 +68,7 @@ class MeshGenerator:
         return out_dir
 
     def _find_existing_asset(self, scene_dir: Path, category: str):
-        # Look for files named {category}*.glb or .obj
+        # Look for files named {category}*.obj
         patt = str(scene_dir / f"{category}*")
         for ext in [".glb", ".gltf", ".obj", ".ply"]:
             files = sorted(glob.glob(patt + ext))
@@ -81,73 +79,50 @@ class MeshGenerator:
 
     def generate_asset(self, category: str, text: str = None, scene_id: str = "default_scene",
                        reuse: bool = True, temperature: float = 0.0) -> dict:
-        """
-        Generate a mesh asset for `category` (optionally guiding with `text`), store it in raw_meshes/{scene_id}/
-        Returns a dict with keys: asset_path (glb), metadata (dict), collision_path (optional)
-        """
         if not self._loaded:
             self._load_models()
 
         scene_dir = self._ensure_scene_dir(scene_id)
-        # If reuse requested, check existing
+        # If reuse requested, check existing (Only for testing)
         if reuse and settings.REUSE_IF_EXISTS:
             found = self._find_existing_asset(scene_dir, category)
             if found:
-                # compute metadata if not present or load sidecar json
+                # compute metadata if not present
                 try:
                     mesh = load_mesh(found)
                     metadata = compute_metadata(mesh)
-                    return {"asset_path": str(found.resolve()), "metadata": metadata}
+                    return {"mesh_path": str(found.resolve()), "metadata": metadata}
                 except Exception:
                     # continue to regenerate if reading fails
                     pass
 
-        # call transformer to generate (the transformer API from repo example)
         txt = text or category
         with torch.no_grad():
             print(f"Generating category='{category}' text='{txt}' ...")
-            # the repository's transformer.generate returns coordinates used by mesh_render.save_rendering
             raw_mesh = self.transformer.generate(texts=[txt], temperature=temperature)
-            # raw_mesh is a coords object or list; try to save to OBJ
-            timestamp = int(time.time() * 1000)
+            # Remember: raw_mesh is a coords object or list
+            timestamp = datetime.datetime.now().strftime('%m_%d__%H_%M_%S')
             out_obj = scene_dir / f"{category}_{timestamp}.obj"
             # saved = save_obj_from_coords([raw_mesh], out_obj)
             mesh_render.save_rendering(str(out_obj), [raw_mesh])
-            # if not saved:
-            #     # if failed to create obj, still create sidecar JSON and return
-            #     # but attempt to load fallback json (save_obj_from_coords wrote .json)
-            #     fallback_json = out_obj.with_suffix(".json")
-            #     if fallback_json.exists():
-            #         return {"asset_path": str(fallback_json.resolve()), "metadata": {"note": "coords_json_saved"}}
-            #     raise RuntimeError("Failed to save generated mesh to OBJ or JSON.")
 
-        # load created mesh
         mesh = load_mesh(out_obj)
-        # compute metadata
         metadata = compute_metadata(mesh)
 
         # create collision mesh (simplify)
-        try:
-            target = settings.COLLISION_TARGET_FACES
-            if len(mesh.faces) > target:
-                collision = mesh.simplify_quadratic_decimation(target)
-            else:
-                collision = mesh.copy()
-            collision_path = scene_dir / f"{category}_{timestamp}_collision.obj"
-            collision.export(str(collision_path))
-        except Exception as e:
-            collision_path = None
-
-        # convert/save glb
-        try:
-            glb_path = scene_dir / f"{category}_{timestamp}.glb"
-            mesh.export(str(glb_path))
-        except Exception as e:
-            # fallback to OBJ if glb export fails
-            glb_path = out_obj
+        # try:
+        #     target = settings.COLLISION_TARGET_FACES
+        #     if len(mesh.faces) > target:
+        #         collision = mesh.simplify_quadratic_decimation(target)
+        #     else:
+        #         collision = mesh.copy()
+        #     collision_path = scene_dir / f"{category}_{timestamp}_collision.obj"
+        #     collision.export(str(collision_path))
+        # except Exception as e:
+        #     collision_path = None
 
         return {
-            "asset_path": str(glb_path.resolve()),
+            "mesh_path": str(out_obj.resolve()),
             "metadata": metadata,
-            "collision_path": str(collision_path.resolve()) if collision_path else None
+            # "collision_path": str(collision_path.resolve()) if collision_path else None
         }

@@ -1,13 +1,12 @@
-# layout_planner/verifier.py
 from shapely.geometry import Polygon, box, Point
 from shapely.affinity import translate, rotate
 import math
-import time
+import datetime
 from typing import List, Tuple, Dict, Any
 import numpy as np
 
 
-# Build axis-aligned room polygon (we treat room as rectangle [0..W] x [0..D] in XZ plane)
+# Build axis-aligned room polygon
 def room_polygon(width: float, depth: float):
     # center the room at (0,0), extents [-w/2, w/2], [-d/2, d/2]
     hw, hd = width / 2.0, depth / 2.0
@@ -23,10 +22,6 @@ def footprint_polygon(center_x: float, center_z: float, width: float, depth: flo
 
 
 def check_out_of_bounds(placements: List[Dict], room_w: float, room_d: float) -> List[Dict[str, Any]]:
-    """
-    Checks for out-of-bounds placements and provides specific feedback.
-    Returns a list of violation records.
-    """
     poly_room = room_polygon(room_w, room_d)
     violations = []
     for i, p in enumerate(placements):
@@ -60,10 +55,6 @@ def check_out_of_bounds(placements: List[Dict], room_w: float, room_d: float) ->
 
 
 def check_collisions(placements: List[Dict], clearance: float = 0.6) -> List[Dict[str, Any]]:
-    """
-    Checks for collisions between placements and provides specific feedback.
-    Returns a list of violation records.
-    """
     polys = []
     for p in placements:
         x, z = p["position"][0], p["position"][2]
@@ -78,7 +69,7 @@ def check_collisions(placements: List[Dict], clearance: float = 0.6) -> List[Dic
     for i in range(n):
         for j in range(i + 1, n):
             if polys[i].intersects(polys[j]):
-                # NEW: Calculate the distance and how much it violates the clearance
+                # Calculate the distance and how much it violates the clearance
                 p1 = Point(placements[i]["position"][0], placements[i]["position"][2])
                 p2 = Point(placements[j]["position"][0], placements[j]["position"][2])
                 distance = p1.distance(p2)
@@ -102,10 +93,6 @@ def check_collisions(placements: List[Dict], clearance: float = 0.6) -> List[Dic
 
 
 def resolve_simple_nudge(placements: List[Dict], i: int, j: int, step=0.05, max_steps=80):
-    """
-    Move j away from i incrementally until no intersection or max_steps.
-    Returns attempted displacement vector and success flag.
-    """
     p_i = placements[i]
     p_j = placements[j]
     for s in range(max_steps):
@@ -128,10 +115,6 @@ def resolve_simple_nudge(placements: List[Dict], i: int, j: int, step=0.05, max_
 
 
 def resolve_rotate(placements: List[Dict], i: int, j: int, max_angle_deg=30, step_deg=5):
-    """
-    Try rotating object j in +/- direction in steps up to max_angle_deg.
-    Returns attempted angle and success flag.
-    """
     p_i = placements[i]
     p_j = placements[j]
     original = p_j.get("rotation_yaw", 0.0)
@@ -153,13 +136,6 @@ def resolve_rotate(placements: List[Dict], i: int, j: int, max_angle_deg=30, ste
 
 def check_and_repair(placements: List[Dict], room_w: float, room_d: float, clearance: float = 0.6,
                      max_repair_steps: int = 5):
-    """
-    Runs full deterministic checks and attempts repairs. Returns:
-    - placements (possibly modified)
-    - repairs: list of repair records {placement_id, violation, attempted_fix, timestamp}
-    - success: bool (True if all checks passed after repairs)
-    - violations: list of failure descriptions if persistent
-    """
     repairs = []
 
     for attempt in range(max_repair_steps):
@@ -183,7 +159,7 @@ def check_and_repair(placements: List[Dict], room_w: float, room_d: float, clear
             oldpos = (p["position"][0], p["position"][2])
             p["position"][0] += nx * 0.2  # coarse nudge
             p["position"][2] += nz * 0.2
-            repairs.append({"timestamp": time.time(), "placement_id": p.get("id", ""), "violation": "out_of_bounds",
+            repairs.append({"timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'), "placement_id": p.get("id", ""), "violation": "out_of_bounds",
                             "attempted_fix": {"type": "nudge_into_room", "old_pos": oldpos,
                                               "new_pos": (p["position"][0], p["position"][2])}})
 
@@ -193,7 +169,7 @@ def check_and_repair(placements: List[Dict], room_w: float, room_d: float, clear
             # try nudge j away from i
             attempt, ok = resolve_simple_nudge(placements, i, j)
             if ok:
-                repairs.append({"timestamp": time.time(), "placement_id": placements[j].get("id", ""),
+                repairs.append({"timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'), "placement_id": placements[j].get("id", ""),
                                 "violation": "collision",
                                 "attempted_fix": {"type": "nudge_away", "from": placements[i].get("id", ""),
                                                   "dx_dz": attempt}})
@@ -201,13 +177,13 @@ def check_and_repair(placements: List[Dict], room_w: float, room_d: float, clear
             # else try rotate j
             attempt2, ok2 = resolve_rotate(placements, i, j)
             if ok2:
-                repairs.append({"timestamp": time.time(), "placement_id": placements[j].get("id", ""),
+                repairs.append({"timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'), "placement_id": placements[j].get("id", ""),
                                 "violation": "collision",
                                 "attempted_fix": {"type": "rotate", "from": placements[i].get("id", ""),
                                                   "angle": attempt2}})
                 continue
-            # if both fail, mark persistent violation and break -> escalate
-            repairs.append({"timestamp": time.time(), "placement_id": placements[j].get("id", ""),
+            # if both fail, mark persistent violation and break
+            repairs.append({"timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'), "placement_id": placements[j].get("id", ""),
                             "violation": "collision_unresolved",
                             "attempted_fix": {"type": "exhausted"}})
 

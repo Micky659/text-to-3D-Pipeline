@@ -5,28 +5,9 @@ import json
 from dataclasses import dataclass, field
 from layout_module.llm_client import LLMClient
 from layout_module.asset_registry import load_categories, categories_table_text
+from layout_module.models import Intent, Interpretation
 import uuid
 
-class Intent(str, Enum):
-    GENERATE = "generate"
-    EDIT = "edit"
-    QUERY = "query"
-
-class ObjectSpec(BaseModel):
-    category: str
-    count: int = 1
-    preferred_bbox: Optional[List[float]] = None  # optional hint [w,d,h]
-    constraints: Optional[str] = None
-
-class Interpretation(BaseModel):
-    user_text: str
-    intent: Intent
-    room: Optional[Dict[str, float]] = None  # {"w":.., "d":.., "h":..}
-    objects: List[ObjectSpec] = field(default_factory=list)
-    style: Optional[str] = None
-    relationships: Optional[str] = None
-    scene_id: Optional[str] = None
-    raw_llm_output: Optional[str] = None
 
 class InputInterpreterAgent:
     def __init__(self, llm: LLMClient, category_path: Optional[str] = None):
@@ -50,7 +31,7 @@ Available categories:
 {categories_table}
 
 Rules:
-- If the user mentions room size, parse it into meters (e.g. '5m x 4m'). If no size given, propose values based on request. Always prefer a very big room size.
+- If the user mentions room size, parse it into meters (e.g. '5m x 4m'). If no size given, propose values based on request.
 - Choose object names from available categories.
 - If no style is suggested propose one based on the request.
 - Add relationships based on the chosen objects.
@@ -68,8 +49,6 @@ User input:
             user_text=user_text.strip()
         )
         raw = self.llm.generate(prompt, max_tokens=max_tokens, temperature=temperature)
-        # try parse
-        # try:
         parsed = json.loads(raw)
         # normalize intent
         intent = parsed.get("intent","generate")
@@ -77,9 +56,8 @@ User input:
             intent = intent.lower()
         if intent not in ("generate","edit","query"):
             intent = "generate"
-        # normalize room -> ensure numeric or "auto"
         room = parsed.get("room", {})
-        # coerce numbers and convert feet if present
+        # coerce numbers and convert feet to meters
         def _norm_room_field(v):
             if isinstance(v, str) and ("ft" in v or "'" in v):
                 # remove ft/symbols then convert
@@ -123,32 +101,3 @@ User input:
             raw_llm_output=raw
         )
         return interp
-        # except Exception as exc:
-        #     # fallback: simple heuristic parse
-        #     return self._fallback_parse(user_text, raw)
-
-    def _fallback_parse(self, user_text: str, raw_llm_output: str = None) -> Interpretation:
-        # Very simple regex-based heuristics: count numbers + nouns from category list
-        import re
-        words = re.findall(r"\w+", user_text.lower())
-        objs = []
-        for cat in self.categories.keys():
-            if cat in user_text.lower():
-                # try to find number before category
-                m = re.search(r"(\d+)\s+" + re.escape(cat), user_text.lower())
-                count = int(m.group(1)) if m else 1
-                objs.append({"category":cat, "count":count, "preferred_bbox":None, "constraints":None})
-        # fallback default
-        if not objs:
-            # pick 1 chair if nothing recognized
-            objs.append({"category":"chair", "count":1, "preferred_bbox":None, "constraints":None})
-        return Interpretation(
-            user_text=user_text,
-            intent=Intent.GENERATE,
-            room={"w":"auto","d":"auto","h":"auto"},
-            objects=objs,
-            style=None,
-            relationships=None,
-            scene_id=None,
-            raw_llm_output=raw_llm_output
-        )

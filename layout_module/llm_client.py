@@ -5,13 +5,6 @@ from openai import OpenAI
 from .config import settings
 
 class LLMClient:
-    """
-    Simple wrapper for Ollama-like HTTP generate endpoints.
-    The endpoint path is configurable via settings.LLM_BASE_URL.
-    Body shape depends on your server; this function uses a conservative
-    shape but is easy to customize if your Ollama version differs.
-    """
-
     def __init__(self, llm_mode: str):
         self.base_url_ollama = settings.LLM_BASE_URL_OLLAMA
         self.base_url_deepseek = settings.LLM_BASE_URL_DEEPSEEK
@@ -45,7 +38,6 @@ class LLMClient:
                 "prompt": prompt,
                 # "max_tokens": max_tokens,
                 "temperature": temperature,
-                # If Ollama endpoint expects different names, edit here.
             }
             resp = requests.post(self.base_url_ollama, json=body, timeout=120)
             resp.raise_for_status()
@@ -66,13 +58,11 @@ class LLMClient:
             data = output[start:end]
 
 
-            # The response format possibilities:
-            # 1) {"text": "..." } or 2) {"results": [{"content": "..."}]} etc.
+            # Parse the response format possibilities
             if isinstance(data, dict):
                 if "text" in data:
                     return data["text"]
                 if "results" in data:
-                    # Example: results -> [{ "content": "..." }]
                     return "".join(r.get("content", "") for r in data["results"])
                 # fall back:
                 return str(data)

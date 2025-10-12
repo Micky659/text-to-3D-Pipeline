@@ -1,27 +1,31 @@
-# agents/orchestrator.py
 from layout_module.llm_client import LLMClient
 from layout_module.models import Room, SceneManifest
 from layout_module.utils import save_manifest, load_manifest
 from layout_module.asset_registry import load_categories
-from layout_module.agents import LayoutPlannerAgent, SceneEditorAgent
 from layout_module.config import settings
-from .input_interpreter import InputInterpreterAgent, Interpretation, Intent
+from .input_interpreter_agent import InputInterpreterAgent, Interpretation, Intent
+from .layout_planner_agent import LayoutPlannerAgent
+from .scene_editor_agent import SceneEditorAgent
+from texture_module import _run_texturing_on_manifest
 from mesh_generator.generator import MeshGenerator
 import uuid
+import datetime
 import time
 from pathlib import Path
 import os
 
 
 class Orchestrator:
-    def __init__(self, llm_mode, categories_path):
+    def __init__(self, llm_mode, categories_path, texture_mode):
         self.llm_client = LLMClient(llm_mode=llm_mode)
         self.interpreter = InputInterpreterAgent(self.llm_client, category_path=categories_path)
         self.layout_planner = LayoutPlannerAgent(self.llm_client, categories=load_categories(categories_path))
         self.mesh_generator = MeshGenerator()
+        self.texture_mode = texture_mode
         self.scene_editor = SceneEditorAgent(self.llm_client, categories_path)
 
-    def handle_request(self, user_text: str, scene_id: str = None, save_to: str = None):
+    def handle_request(self, user_text: str, scene_id: str = None):
+        start_time = time.time()
         interp: Interpretation = self.interpreter.interpret(user_text)
         print("INTERPRETATION:", interp.model_dump_json(indent=2))
         if interp.intent == Intent.GENERATE:
@@ -37,7 +41,7 @@ class Orchestrator:
                 for i in range(o.count):
                     req_list.append(o.category)
             relationships = interp.relationships or ""
-            scene_id = scene_id or interp.scene_id or f"scene_{uuid.uuid4().hex[:6]}"
+            scene_id = scene_id or interp.scene_id or f"scene_{uuid.uuid4().hex[:2]}"
             res = self.layout_planner.plan(scene_id, room, req_list, relationships=relationships,
                                            style=interp.style or "default")
             if not res.get("ok"):
@@ -63,13 +67,9 @@ class Orchestrator:
             for obj in manifest.objects:
                 info = unique_cats.get(obj.category)
                 if info:
-                    # add fields to Placement by turning model to dict first or using .dict()/update
-                    # we'll attach extras in manifest.metadata -> but simplest: append fields to object dict
                     obj_dict = obj.model_dump()
-                    obj_dict["asset"] = info["asset_path"]
+                    obj_dict["asset"] = info["mesh_path"]
                     obj_dict["metadata"] = info.get("metadata", {})
-                    # replace object entry (we must reconstruct placements list)
-                    # we'll collect modified and reassign below
                 else:
                     obj_dict = obj.model_dump()
                     obj_dict["asset"] = None
@@ -81,16 +81,23 @@ class Orchestrator:
                 info = unique_cats.get(obj.category)
                 objd = obj.model_dump()
                 if info:
-                    objd["asset"] = info["asset_path"]
+                    objd["asset"] = info["mesh_path"]
                     objd["metadata"] = info.get("metadata", {})
                 else:
                     objd["asset"] = None
                     objd["metadata"] = {}
                 new_objs.append(objd)
+
+
+
             manifest_dict = manifest.model_dump()
             manifest_dict["objects"] = new_objs
 
-            # Save the manifest JSON (use utils.save_manifest but convenience: write file)
+            manifest_dict = _run_texturing_on_manifest(manifest_dict, texture_mode=self.texture_mode, scene_id=scene_id)
+            end_time = time.time()
+            elapsed_time = round(end_time - start_time, 2)
+            manifest_dict["inference_time"] = elapsed_time
+            # Save the manifest JSON
             out_path = save_manifest(manifest)  # note: this saves original manifest; prefer to save modified manifest
             # overwrite with modified manifest
             import json
@@ -107,7 +114,7 @@ class Orchestrator:
             # load existing manifest
             existing_manifest = load_manifest(Path(settings.OUTPUT_DIR) / f"{interp.scene_id}_scene_manifest.json")
             edit_instruction = interp.raw_text if hasattr(interp, "raw_text") else interp.user_text
-            edit_res = self.scene_editor.edit(existing_manifest.dict(), edit_instruction)
+            edit_res = self.scene_editor.edit(existing_manifest.model_dump(), edit_instruction)
             if not edit_res.get("ok"):
                 return {"status": "error", "reason": "edit_failed", "details": edit_res.get("error")}
             updated_manifest = edit_res["manifest"]
@@ -125,7 +132,6 @@ class Orchestrator:
                 texture_input = obj.get("retexture_input", None)
 
                 if regenerate_flag:
-                    # record previous asset (if exists)
                     prev_asset = obj.get("asset", None)
                     try:
                         # Use a higher temperature for regeneration to add variation
@@ -133,13 +139,13 @@ class Orchestrator:
                                                                         scene_id=interp.scene_id, reuse=False,
                                                                         temperature=0.15)
                         # Update object asset and metadata with new values
-                        new_asset = regen_info.get("asset_path")
+                        new_asset = regen_info.get("mesh_path")
                         new_meta = regen_info.get("metadata", {})
                         obj["asset"] = new_asset
                         obj["metadata"] = new_meta
                         # record provenance
                         updated_manifest["metadata"]["provenance"].append({
-                            "timestamp": time.time(),
+                            "timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'),
                             "placement_id": placement_id,
                             "action": "regenerated",
                             "category": obj.get("category"),
@@ -151,28 +157,30 @@ class Orchestrator:
                         obj.setdefault("notes", "")
                         obj["notes"] += f" | regeneration_failed: {e}"
                         updated_manifest["metadata"]["provenance"].append({
-                            "timestamp": time.time(),
+                            "timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'),
                             "placement_id": placement_id,
                             "action": "regeneration_failed",
                             "error": str(e)
                         })
 
 
-                # Record texture_input into object metadata if present
+                # Record texture_input into object metadata and re apply textures
                 if texture_input:
                     meta = obj.get("metadata", {}) or {}
                     meta["retexture_input"] = texture_input
                     obj["metadata"] = meta
+                    updated_manifest = _run_texturing_on_manifest(updated_manifest.model_dump(), texture_mode=self.texture_mode,
+                                                               scene_id=scene_id)
+                    updated_manifest = SceneManifest.model_validate(updated_manifest)
                     # provenance record for texture request
                     updated_manifest["metadata"]["provenance"].append({
-                        "timestamp": time.time(),
+                        "timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'),
                         "placement_id": placement_id,
                         "action": "texture_requested",
                         "retexture_input": texture_input
                     })
 
             # save updated manifest
-            # build pydantic manifest object
             scene_manifest_obj = SceneManifest.model_validate(updated_manifest)
             out_path = save_manifest(scene_manifest_obj)
             return {"status": "ok", "manifest_path": str(out_path)}

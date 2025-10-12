@@ -1,12 +1,11 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings
-from pydantic import AnyHttpUrl  # still available in v2
 
 
 class Settings(BaseSettings):
     # Ollama defaults
     LLM_BASE_URL_OLLAMA: str = "http://localhost:11434/api/generate"
-    LLM_MODEL: str = "llama3.1:8b"
+    LLM_MODEL: str = "qwen3:30b"
     LLM_BASE_URL_DEEPSEEK: str = "https://api.deepseek.com"
     DEEPSEEK_KEY: str = "sk-d3a04397262d4362b6cbd6fc6b6e5172"
     OUTPUT_DIR: Path = Path("./output")

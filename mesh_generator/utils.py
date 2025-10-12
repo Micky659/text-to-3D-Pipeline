@@ -1,21 +1,12 @@
-# mesh_generator/utils.py
 import trimesh
 import numpy as np
 from pathlib import Path
 import json
 from typing import Dict, Any
 
+
 def save_obj_from_coords(coords_list, out_obj_path: Path):
-    """
-    coords_list is a list of per-sample coords compatible with existing mesh_render.save_rendering usage.
-    We reuse mesh_render.save_rendering if available; otherwise create a simple OBJ from first sample (coords and faces unknown).
-    But typical transformer.generate returns vertex coords in face order (N_faces x vertices_per_face x 3).
-    We'll try to detect what we have and save an OBJ via trimesh if possible.
-    """
-    # If the user has mesh_render available, prefer it. But to avoid external dependency here,
-    # try to form a Trimesh if coords_list looks like faces coordinates (N_faces, 3 vertices).
     sample = coords_list[0]
-    # If sample shape looks like faces -> (N_faces, mv, 3)
     arr = None
     try:
         import numpy as np
@@ -46,7 +37,7 @@ def save_obj_from_coords(coords_list, out_obj_path: Path):
             return True
     except Exception:
         pass
-    # Fallback: if mesh_render exists, user can convert externally; write json with coords for manual handling
+    # Fallback: Write json with coords for manual handling and convert externally
     fallback = out_obj_path.with_suffix(".json")
     with open(fallback, "w") as f:
         json.dump({"coords_samples": coords_list}, f)
@@ -62,16 +53,13 @@ def load_mesh(path: Path) -> trimesh.Trimesh:
     return mesh
 
 def compute_metadata(mesh: trimesh.Trimesh) -> Dict[str, Any]:
-    """
-    Compute bbox extents, canonical up, forward (heuristic), anchor point (floor contact centroid).
-    """
     metadata = {}
     extents = mesh.extents.tolist()  # [x_size, y_size, z_size]
     metadata["bbox"] = [float(extents[0]), float(extents[2]), float(extents[1])]  # convert to w,d,h ordering (X,Z,Y)
-    # canonical up is +Y in our pipeline
+    # canonical up is +Y in the pipeline
     metadata["up"] = [0.0, 1.0, 0.0]
 
-    # compute forward via PCA on XZ plane: project vertices -> compute principal axis
+    # compute forward via PCA on XZ plane
     verts = mesh.vertices.copy()
     if len(verts) >= 3:
         pts_xz = verts[:, [0, 2]]  # X,Z

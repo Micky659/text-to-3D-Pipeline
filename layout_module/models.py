@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import List, Optional, Literal, Tuple, Dict
 
 Coord3 = Tuple[float, float, float]
@@ -31,6 +32,7 @@ class Placement(BaseModel):
 
 class SceneManifest(BaseModel):
     scene_id: str
+    inference_time: float = None
     room: Room
     objects: List[Placement]
     metadata: dict = field(default_factory=dict)
@@ -39,6 +41,27 @@ class SceneManifest(BaseModel):
         prov = self.metadata.get("provenance", [])
         prov.append(record)
         self.metadata["provenance"] = prov
+
+class Intent(str, Enum):
+    GENERATE = "generate"
+    EDIT = "edit"
+    QUERY = "query"
+
+class ObjectSpec(BaseModel):
+    category: str
+    count: int = 1
+    preferred_bbox: Optional[List[float]] = None
+    constraints: Optional[str] = None
+
+class Interpretation(BaseModel):
+    user_text: str
+    intent: Intent
+    room: Optional[Dict[str, float]] = None  # {"w":.., "d":.., "h":..}
+    objects: List[ObjectSpec] = field(default_factory=list)
+    style: Optional[str] = None
+    relationships: Optional[str] = None
+    scene_id: Optional[str] = None
+    raw_llm_output: Optional[str] = None
 
 class RepairRecord(BaseModel):
     timestamp: float
