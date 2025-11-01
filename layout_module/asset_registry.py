@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, List
 
 DEFAULT_CATEGORIES = {
     "sofa": {"bbox": [2.0, 0.95, 0.85], "forward": [0,0,1], "up": [0,1,0]},
@@ -18,8 +18,13 @@ def categories_table_text(cat_map: Dict = None) -> str:
     cat_map = cat_map or DEFAULT_CATEGORIES
     lines = []
     for k,v in cat_map.items():
-        try:
-            lines.append(f"{k}: bbox={v['bbox']}, forward={v['forward']}, up={v['up']}")
-        except:
-            lines.append(f"{k}: bbox={v['bbox']}")
+        lines.append(f"{k}: bbox={v['bbox']}")
+    return "\n".join(lines)
+
+def required_categories_table_text(cat_map: Dict = None, object_requirement_list: List = None) -> str:
+    cat_map = cat_map or DEFAULT_CATEGORIES
+    lines = []
+    for k,v in cat_map.items():
+        if k in object_requirement_list:
+            lines.append(f"{k}: bbox={v['bbox']}, anchor={v['anchor']}")
     return "\n".join(lines)

@@ -1,0 +1,164 @@
+{
+  "scene_id": "scene_96",
+  "user_input": "A music room with a piano, a chair in front of it, a lamp nearby, and a speaker standing beside the piano.",
+  "texture_method": "gen_and_map",
+  "total_inference": 359.69,
+  "room": {
+    "w": 5.0,
+    "d": 4.0,
+    "h": 3.0,
+    "units": "meters"
+  },
+  "objects": [
+    {
+      "id": "piano_0",
+      "category": "piano pianoforte forte-piano",
+      "bbox": [
+        1.5,
+        2.0,
+        1.2
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.5
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "centered, back against wall with clearance",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "sleek black lacquer",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "chair_0",
+      "category": "chair",
+      "bbox": [
+        0.5,
+        0.5,
+        0.95
+      ],
+      "position": [
+        0.0,
+        0.0,
+        -1.35
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "in front of piano with 0.60\u202fm clearance",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "upholstered gray",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_96\\chair\\chair_10_27__00_53_06\\chair_10_27__00_53_06_textured.obj",
+      "metadata": {
+        "bbox": [
+          0.5,
+          0.5,
+          0.8999999761581421
+        ],
+        "anchor": [
+          0.010989014059305191,
+          -0.4500003755092621,
+          -0.024065937846899033
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 487,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_96\\chair\\chair_10_27__00_53_06\\texture_10_27__00_53_27.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "lamp_0",
+      "category": "lamp",
+      "bbox": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "position": [
+        1.55,
+        0.0,
+        0.5
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "near piano right side, 0.60\u202fm clearance",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "metal chrome",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_96\\lamp\\lamp_10_27__00_53_16\\lamp_10_27__00_53_16_textured.obj",
+      "metadata": {
+        "bbox": [
+          0.30000001192092896,
+          0.30000001192092896,
+          0.6000000238418579
+        ],
+        "anchor": [
+          -0.014324536547064781,
+          -0.2999996840953827,
+          0.01875000074505806
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 270,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_96\\lamp\\lamp_10_27__00_53_16\\texture_10_27__00_53_37.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "speaker_0",
+      "category": "loudspeaker speaker speaker unit loudspeaker system speaker system",
+      "bbox": [
+        0.4,
+        0.4,
+        1.0
+      ],
+      "position": [
+        -1.55,
+        0.0,
+        0.5
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "beside piano left side, 0.60\u202fm clearance",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "black matte",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    }
+  ],
+  "metadata": {
+    "scene_init_time": "10_27__00_52_46",
+    "provenance": [
+      {
+        "timestamp": "10_27__00_53_37",
+        "placement_id": "chair_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_96\\chair\\chair_10_27__00_53_06\\texture_10_27__00_53_27.png"
+      },
+      {
+        "timestamp": "10_27__00_53_42",
+        "placement_id": "lamp_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_96\\lamp\\lamp_10_27__00_53_16\\texture_10_27__00_53_37.png"
+      }
+    ],
+    "per_module_inference": {
+      "layout": 303.22,
+      "mesh_generation": 41.04,
+      "texture_generation": 15.44
+    }
+  }
+}

@@ -1,4 +1,3 @@
-# texture_module/external_texture.py
 import os, subprocess, time, yaml
 from pathlib import Path
 from .config import settings
@@ -26,9 +25,21 @@ def run_texturepaper_with_config(cfg_path: str):
     # Run command: python -m scripts.run_texture --config_path=configs/text_guided/bench.yaml
     cmd = settings.TEXTUREPAPER_RUN_CMD.split("-") + ["--config_path", str(cfg_path)]
     # run in shellless mode
-    proc = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True, env=env)
+    # proc = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True, env=env)
+    #
+    # if proc.returncode != 0:
+    #     raise RuntimeError(f"TEXTurePaper run failed: {proc.returncode}\nstderr:\n{proc.stderr}\nstdout:\n{proc.stdout}")
+
+
+    proc = subprocess.Popen(cmd, cwd=workdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out_bytes, err_bytes = proc.communicate()
+
+    out = out_bytes.decode("utf-8", errors="replace") if isinstance(out_bytes, (bytes, bytearray)) else str(out_bytes)
+    err = err_bytes.decode("utf-8", errors="replace") if isinstance(err_bytes, (bytes, bytearray)) else str(err_bytes)
+
     if proc.returncode != 0:
-        raise RuntimeError(f"TEXTurePaper run failed: {proc.returncode}\nstderr:\n{proc.stderr}\nstdout:\n{proc.stdout}")
+        raise RuntimeError(f"subprocess failed rc={proc.returncode}\nstdout:\n{out}\nstderr:\n{err}")
+
 
     exp_mesh_dir = settings.TEXTUREPAPER_EXPERIMENTS_DIR / exp_name / "mesh"
     if not exp_mesh_dir.exists():

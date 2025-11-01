@@ -1,8 +1,11 @@
 import torch
 from pathlib import Path
 from .config import settings
+from .data_scripts.mesh_render_v2 import save_mesh_for_scene
 from .utils import save_obj_from_coords, load_mesh, compute_metadata
 from .data_scripts import mesh_render
+from .data_scripts.mesh_render_v2 import save_mesh_for_scene
+
 import os
 import shutil
 import datetime
@@ -103,11 +106,18 @@ class MeshGenerator:
             # Remember: raw_mesh is a coords object or list
             timestamp = datetime.datetime.now().strftime('%m_%d__%H_%M_%S')
             out_obj = scene_dir / f"{category}_{timestamp}.obj"
-            # saved = save_obj_from_coords([raw_mesh], out_obj)
-            mesh_render.save_rendering(str(out_obj), [raw_mesh])
 
-        mesh = load_mesh(out_obj)
-        metadata = compute_metadata(mesh)
+            metadata = save_mesh_for_scene(
+                path=str(out_obj),
+                mesh_output=raw_mesh,
+                category=txt,
+            )
+
+            # saved = save_obj_from_coords([raw_mesh], out_obj)
+        #     mesh_render.save_rendering(str(out_obj), [raw_mesh])
+        #
+        # mesh = load_mesh(out_obj)
+        # metadata = compute_metadata(mesh)
 
         # create collision mesh (simplify)
         # try:

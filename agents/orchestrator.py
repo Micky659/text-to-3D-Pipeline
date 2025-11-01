@@ -12,6 +12,7 @@ import uuid
 import datetime
 import time
 from pathlib import Path
+import json
 import os
 
 
@@ -26,6 +27,7 @@ class Orchestrator:
 
     def handle_request(self, user_text: str, scene_id: str = None):
         start_time = time.time()
+        layout_start_time = time.time()
         interp: Interpretation = self.interpreter.interpret(user_text)
         print("INTERPRETATION:", interp.model_dump_json(indent=2))
         if interp.intent == Intent.GENERATE:
@@ -42,13 +44,18 @@ class Orchestrator:
                     req_list.append(o.category)
             relationships = interp.relationships or ""
             scene_id = scene_id or interp.scene_id or f"scene_{uuid.uuid4().hex[:2]}"
-            res = self.layout_planner.plan(scene_id, room, req_list, relationships=relationships,
+            res = self.layout_planner.plan(scene_id, user_text, self.texture_mode, room, req_list, relationships=relationships,
                                            style=interp.style or "default")
             if not res.get("ok"):
                 # failed to produce valid layout
                 return {"status": "error", "reason": "layout_generation_failed", "details": res.get("error")}
             print("LAYOUT: ", res)
             manifest = res["manifest"]
+
+            layout_end_time = time.time()
+            layout_elapsed_time = round(layout_end_time - layout_start_time, 2)
+
+            mesh_gen_start_time = time.time()
 
             # Generate assets (unique categories only) and annotate manifest
             unique_cats = {}
@@ -88,22 +95,34 @@ class Orchestrator:
                     objd["metadata"] = {}
                 new_objs.append(objd)
 
-
-
             manifest_dict = manifest.model_dump()
             manifest_dict["objects"] = new_objs
 
+            mesh_gen_end_time = time.time()
+            mesh_gen_elapsed_time = round(mesh_gen_end_time - mesh_gen_start_time, 2)
+
+            texture_start_time = time.time()
+
             manifest_dict = _run_texturing_on_manifest(manifest_dict, texture_mode=self.texture_mode, scene_id=scene_id)
+
+            texture_end_time = time.time()
+            texture_elapsed_time = round(texture_end_time - texture_start_time, 2)
+
             end_time = time.time()
             elapsed_time = round(end_time - start_time, 2)
-            manifest_dict["inference_time"] = elapsed_time
+
+            manifest_dict_meta = manifest_dict.get("metadata", {}) or {}
+            manifest_dict_meta["per_module_inference"] = {"layout":layout_elapsed_time, "mesh_generation":mesh_gen_elapsed_time, "texture_generation":texture_elapsed_time}
+            manifest_dict["metadata"] = manifest_dict_meta
+
+            manifest_dict["total_inference"] = elapsed_time
             # Save the manifest JSON
-            out_path = save_manifest(manifest)  # note: this saves original manifest; prefer to save modified manifest
-            # overwrite with modified manifest
-            import json
+            manifest = SceneManifest.model_validate(manifest_dict)
+            out_path = save_manifest(manifest)
+
             out_file = out_path.parent / out_path.name
-            with open(out_file, "w") as f:
-                json.dump(manifest_dict, f, indent=2)
+            # with open(out_file, "w") as f:
+            #     json.dump(manifest_dict, f, indent=2)
 
             return {"status": "ok", "manifest_path": str(out_file)}
 
@@ -137,7 +156,7 @@ class Orchestrator:
                         # Use a higher temperature for regeneration to add variation
                         regen_info = self.mesh_generator.generate_asset(obj.get("category"), text=obj.get("category"),
                                                                         scene_id=interp.scene_id, reuse=False,
-                                                                        temperature=0.15)
+                                                                        temperature=0.0)
                         # Update object asset and metadata with new values
                         new_asset = regen_info.get("mesh_path")
                         new_meta = regen_info.get("metadata", {})

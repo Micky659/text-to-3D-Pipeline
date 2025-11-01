@@ -22,14 +22,14 @@ def _run_texturing_on_manifest(manifest_dict: dict, texture_mode: str, scene_id:
             continue
 
         raw_asset_path = Path(raw_asset)
-        out_dir = out_dir_scene / obj['category']
+        out_dir = out_dir_scene / obj['category'] / raw_asset_path.stem
         out_dir.mkdir(parents=True, exist_ok=True)
 
         # generate texture image and map it
         if texture_mode == "gen_and_map":
             # fast generation
             img_path = generate_texture_image(prompt=tex_prompt, out_dir=out_dir)
-            textured_obj = out_dir / f"{raw_asset_path.stem}_textured_{datetime.datetime.now().strftime('%m_%d__%H_%M_%S')}.obj"
+            textured_obj = out_dir / f"{raw_asset_path.stem}_textured.obj"
             apply_texture_to_obj(str(raw_asset_path), str(img_path), str(textured_obj))
             # update manifest
             prev = obj.get("asset")

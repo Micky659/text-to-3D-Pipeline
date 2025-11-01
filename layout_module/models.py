@@ -18,8 +18,7 @@ class Placement(BaseModel):
     category: str
     bbox: BBox
     position: Coord3
-    rotation_yaw: float = Field(..., description="rotation yaw in degrees, 0 = +X")
-    anchor: Literal["floor_center", "center", "bottom_back"] = "floor_center"
+    rotation_yaw: float = Field(..., description="rotation yaw in degrees, 0 = +X") # Priority: verify for blender
     notes: Optional[str] = None
     snap_policy: Optional[str] = "floor|align_front_to_dir"
     style_hint: Optional[str] = None
@@ -32,7 +31,10 @@ class Placement(BaseModel):
 
 class SceneManifest(BaseModel):
     scene_id: str
-    inference_time: float = None
+    user_input: str
+    texture_method: str
+    # metadata: Optional[Dict[str, Any]] = None
+    total_inference: float = None
     room: Room
     objects: List[Placement]
     metadata: dict = field(default_factory=dict)
@@ -45,7 +47,7 @@ class SceneManifest(BaseModel):
 class Intent(str, Enum):
     GENERATE = "generate"
     EDIT = "edit"
-    QUERY = "query"
+    QUERY = "query" # Pointless. Note: Consider removing.
 
 class ObjectSpec(BaseModel):
     category: str
@@ -66,7 +68,9 @@ class Interpretation(BaseModel):
 class RepairRecord(BaseModel):
     timestamp: float
     placement_id: str
+    category: Optional[str]
     violation: str
     attempted_fix: Dict[str, Any]
+    success: Optional[bool]
 
 

@@ -11,7 +11,7 @@ class MeshGenSettings(BaseSettings):
     DEVICE: str = "cuda"
 
     # If True, generator will attempt to reuse an existing asset for the same category in a scene
-    REUSE_IF_EXISTS: bool = True
+    REUSE_IF_EXISTS: bool = False
 
     # Target face count for simplified collision mesh (Not needed imo)
     # Note to self: Remove collision mesh function

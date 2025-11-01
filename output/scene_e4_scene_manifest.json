@@ -1,0 +1,182 @@
+{
+  "scene_id": "scene_e4",
+  "user_input": "An outdoor garden with a bench, several pots on the ground, a lamp post nearby, and a birdhouse.",
+  "texture_method": "gen_and_map",
+  "total_inference": 283.0,
+  "room": {
+    "w": 6.0,
+    "d": 5.0,
+    "h": 3.0,
+    "units": "meters"
+  },
+  "objects": [
+    {
+      "id": "bench_0",
+      "category": "bench",
+      "bbox": [
+        1.2,
+        0.4,
+        0.5
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "central seating, oriented along +X axis",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "weathered pine, matte finish",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "lamp_0",
+      "category": "lamp",
+      "bbox": [
+        0.4,
+        0.4,
+        1.6
+      ],
+      "position": [
+        1.5,
+        0.0,
+        0.0
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "lamp post placed near bench, respecting clearance",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "iron post with lantern, rusted patina",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_e4\\lamp\\lamp_10_27__03_13_50\\lamp_10_27__03_13_50_textured.obj",
+      "metadata": {
+        "bbox": [
+          0.30000001192092896,
+          0.30000001192092896,
+          0.6000000238418579
+        ],
+        "anchor": [
+          -0.014324536547064781,
+          -0.2999996840953827,
+          0.01875000074505806
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 270,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_e4\\lamp\\lamp_10_27__03_13_50\\texture_10_27__03_14_05.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "pot_0",
+      "category": "pot flowerpot",
+      "bbox": [
+        0.3,
+        0.3,
+        0.4
+      ],
+      "position": [
+        -1.5,
+        0.0,
+        -1.0
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "flowerpot positioned around bench, left\u2011back side",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "terracotta, cracked surface",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "pot_1",
+      "category": "pot flowerpot",
+      "bbox": [
+        0.3,
+        0.3,
+        0.4
+      ],
+      "position": [
+        -1.5,
+        0.0,
+        1.0
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "flowerpot positioned around bench, left\u2011front side",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "terracotta, cracked surface",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "pot_2",
+      "category": "pot flowerpot",
+      "bbox": [
+        0.3,
+        0.3,
+        0.4
+      ],
+      "position": [
+        0.0,
+        0.0,
+        -1.8
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "flowerpot positioned behind bench",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "terracotta, cracked surface",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "birdhouse_0",
+      "category": "birdhouse",
+      "bbox": [
+        0.25,
+        0.25,
+        0.3
+      ],
+      "position": [
+        2.2,
+        0.0,
+        -2.0
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "mounted on a tree at back\u2011right corner",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "cottage\u2011style wood, painted red",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    }
+  ],
+  "metadata": {
+    "scene_init_time": "10_27__03_13_39",
+    "provenance": [
+      {
+        "timestamp": "10_27__03_14_13",
+        "placement_id": "lamp_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_e4\\lamp\\lamp_10_27__03_13_50\\texture_10_27__03_14_05.png"
+      }
+    ],
+    "per_module_inference": {
+      "layout": 248.91,
+      "mesh_generation": 26.28,
+      "texture_generation": 7.81
+    }
+  }
+}

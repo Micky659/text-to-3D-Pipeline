@@ -55,28 +55,14 @@ def load_mesh(path: Path) -> trimesh.Trimesh:
 def compute_metadata(mesh: trimesh.Trimesh) -> Dict[str, Any]:
     metadata = {}
     extents = mesh.extents.tolist()  # [x_size, y_size, z_size]
-    metadata["bbox"] = [float(extents[0]), float(extents[2]), float(extents[1])]  # convert to w,d,h ordering (X,Z,Y)
-    # canonical up is +Y in the pipeline
+    # metadata["bbox"] = [float(extents[0]), float(extents[2]), float(extents[1])]  # convert to w,d,h ordering (X,Z,Y)
+    # canonical up is +Y and forward is -Z
     metadata["up"] = [0.0, 1.0, 0.0]
+    metadata["forward"] = [0.0, 0.0, -1.0]
 
-    # compute forward via PCA on XZ plane
+
     verts = mesh.vertices.copy()
-    if len(verts) >= 3:
-        pts_xz = verts[:, [0, 2]]  # X,Z
-        # center
-        pts_xz_c = pts_xz - pts_xz.mean(axis=0)
-        # SVD
-        u, s, vh = np.linalg.svd(pts_xz_c, full_matrices=False)
-        principal = vh[0]  # principal direction in XZ
-        # forward as 3d vector with zero Y
-        forward = [float(principal[0]), 0.0, float(principal[1])]
-        # normalize
-        norm = np.linalg.norm(forward)
-        if norm > 0:
-            forward = [forward[0]/norm, 0.0, forward[2]/norm]
-        metadata["forward"] = forward
-    else:
-        metadata["forward"] = [0.0, 0.0, -1.0]
+
 
     # anchor: centroid of floor-contact vertices (min y tolerance)
     ys = verts[:, 1]

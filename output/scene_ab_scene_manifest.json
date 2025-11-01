@@ -1,0 +1,111 @@
+{
+  "scene_id": "scene_ab",
+  "user_input": "A city street with a bus, a car, a motorcycle, and a trash bin placed near the sidewalk.",
+  "texture_method": "gen_and_map",
+  "total_inference": 792.48,
+  "room": {
+    "w": 20.0,
+    "d": 8.0,
+    "h": 5.0,
+    "units": "meters"
+  },
+  "objects": [
+    {
+      "id": "bus_0",
+      "category": "bus autobus coach charabanc double-decker jitney motorbus motorcoach omnibus passenger vehi",
+      "bbox": [
+        2.5,
+        12.0,
+        3.2
+      ],
+      "position": [
+        -3.0,
+        0.0,
+        -1.0
+      ],
+      "rotation_yaw": 90.0,
+      "notes": "oriented along X axis, on the road",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "metallic gray, urban wear",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "car_0",
+      "category": "car auto automobile machine motorcar",
+      "bbox": [
+        1.8,
+        4.5,
+        1.5
+      ],
+      "position": [
+        6.0,
+        0.0,
+        0.0
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "parked on the road",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "sleek black paint",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "motorcycle_0",
+      "category": "motorcycle bike",
+      "bbox": [
+        0.8,
+        2.2,
+        1.2
+      ],
+      "position": [
+        8.0,
+        0.0,
+        2.0
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "on the road, right side",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "red matte finish",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "ashcan_0",
+      "category": "ashcan trash can garbage can wastebin ash bin ash-bin ashbin dustbin trash barrel trash bin",
+      "bbox": [
+        0.4,
+        0.2,
+        0.5
+      ],
+      "position": [
+        9.5,
+        0.0,
+        -2.5
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "near sidewalk, right wall",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "concrete gray",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    }
+  ],
+  "metadata": {
+    "scene_init_time": "10_27__00_20_44",
+    "provenance": [],
+    "per_module_inference": {
+      "layout": 771.36,
+      "mesh_generation": 21.12,
+      "texture_generation": 0.0
+    }
+  }
+}

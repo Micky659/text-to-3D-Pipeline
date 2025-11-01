@@ -31,7 +31,7 @@ Available categories:
 {categories_table}
 
 Rules:
-- If the user mentions room size, parse it into meters (e.g. '5m x 4m'). If no size given, propose values based on request.
+- If the user mentions room size, parse it into meters (e.g. '5m x 4m'). If no size given, propose values based on request and object dimensions.
 - Choose object names from available categories.
 - If no style is suggested propose one based on the request.
 - Add relationships based on the chosen objects.

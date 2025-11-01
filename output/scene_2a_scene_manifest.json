@@ -1,0 +1,138 @@
+{
+  "scene_id": "scene_2a",
+  "user_input": "A modern kitchen setup with a stove, a microwave, a dishwasher, and a cabinet along one side.",
+  "texture_method": "gen_and_map",
+  "total_inference": 1063.64,
+  "room": {
+    "w": 4.0,
+    "d": 3.0,
+    "h": 2.5,
+    "units": "meters"
+  },
+  "objects": [
+    {
+      "id": "cabinet_0",
+      "category": "cabinet",
+      "bbox": [
+        0.9,
+        0.45,
+        1.2
+      ],
+      "position": [
+        -1.25,
+        0.0,
+        -0.6
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "aligned along back wall, leftmost, 0.15m from walls",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "smooth white laminate",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_2a\\cabinet\\cabinet_10_27__03_08_54\\cabinet_10_27__03_08_54_textured.obj",
+      "metadata": {
+        "bbox": [
+          0.800000011920929,
+          0.5,
+          1.7999999523162842
+        ],
+        "anchor": [
+          -4.257474817137563e-09,
+          -0.8999999165534973,
+          0.0
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 376,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_2a\\cabinet\\cabinet_10_27__03_08_54\\texture_10_27__03_09_05.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "stove_0",
+      "category": "stove",
+      "bbox": [
+        0.6,
+        0.6,
+        0.9
+      ],
+      "position": [
+        0.1,
+        0.0,
+        -0.6
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "centered between cabinet and dishwasher, 0.60m clearance from cabinet",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "stainless steel",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "dishwasher_0",
+      "category": "dishwasher dish washer dishwashing machine",
+      "bbox": [
+        0.6,
+        0.6,
+        0.85
+      ],
+      "position": [
+        1.2,
+        0.0,
+        0.75
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "front\u2011right corner, 0.15m from front and side walls, maintains 0.60m clearance from stove",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "modern grey",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "microwave_0",
+      "category": "microwave",
+      "bbox": [
+        0.5,
+        0.5,
+        0.3
+      ],
+      "position": [
+        -1.2,
+        0.0,
+        0.75
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "front\u2011left corner, opposite dishwasher, 0.60m clearance from cabinet and stove",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "compact stainless steel",
+      "asset": null,
+      "metadata": {},
+      "regenerate": false,
+      "retexture_input": null
+    }
+  ],
+  "metadata": {
+    "scene_init_time": "10_27__03_08_41",
+    "provenance": [
+      {
+        "timestamp": "10_27__03_09_15",
+        "placement_id": "cabinet_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_2a\\cabinet\\cabinet_10_27__03_08_54\\texture_10_27__03_09_05.png"
+      }
+    ],
+    "per_module_inference": {
+      "layout": 1029.74,
+      "mesh_generation": 24.62,
+      "texture_generation": 9.27
+    }
+  }
+}
