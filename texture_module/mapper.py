@@ -38,31 +38,32 @@ def apply_texture_to_obj(obj_path: str, image_path: str, out_obj_path: str, proj
     Loads OBJ with Open3D, computes planar UVs, assigns texture image and writes OBJ+MTL.
     Returns out_obj_path.
     """
-    obj_path = Path(obj_path)
-    out_obj_path = Path(out_obj_path)
-    img_path = Path(image_path)
-    mesh = o3d.io.read_triangle_mesh(str(obj_path))
+    obj_path = str(Path(obj_path).resolve())
+    out_obj_path = str(Path(out_obj_path).resolve())
+    img_path = str(Path(image_path).resolve())
+
+    # Load mesh
+    mesh = o3d.io.read_triangle_mesh(obj_path)
     if mesh.is_empty():
         raise RuntimeError(f"Failed to read mesh from {obj_path}")
 
-    # Ensure triangles and vertices exist
     if len(mesh.triangles) == 0:
         raise RuntimeError("Mesh has no triangles")
 
-    # compute vertex normals if missing
     if not mesh.has_vertex_normals():
         mesh.compute_vertex_normals()
 
-    # compute triangle_uvs
+    # Compute planar UVs (assuming you defined compute_planar_uvs)
     tri_uvs = compute_planar_uvs(mesh, projection_plane=projection_plane)
     mesh.triangle_uvs = o3d.utility.Vector2dVector(tri_uvs)
 
-    # load texture image
-    tex = o3d.io.read_image(str(img_path))
+    # Load texture
+    tex = o3d.io.read_image(img_path)
     mesh.textures = [tex]
 
-    # write triangle mesh as OBJ (Open3D writes MTL and references first texture)
-    success = o3d.io.write_triangle_mesh(str(out_obj_path), mesh, write_triangle_uvs=True)
+    # Write OBJ (ensure write_triangle_uvs=True)
+    print(out_obj_path)
+    success = o3d.io.write_triangle_mesh(out_obj_path, mesh, write_triangle_uvs=True)
     if not success:
         raise RuntimeError(f"Open3D failed to write textured mesh to {out_obj_path}")
     return str(out_obj_path)
