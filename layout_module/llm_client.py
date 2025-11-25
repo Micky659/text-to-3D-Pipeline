@@ -5,10 +5,10 @@ from openai import OpenAI
 from .config import settings
 
 class LLMClient:
-    def __init__(self, llm_mode: str):
+    def __init__(self, llm_mode: str, ollama_model: str):
         self.base_url_ollama = settings.LLM_BASE_URL_OLLAMA
         self.base_url_deepseek = settings.LLM_BASE_URL_DEEPSEEK
-        self.model = settings.LLM_MODEL
+        self.model = ollama_model if ollama_model else settings.LLM_MODEL
         self.deepseek_key = settings.DEEPSEEK_KEY
         self.llm_mode = llm_mode
 

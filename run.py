@@ -6,13 +6,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--text", type=str, help="Natural language scene request", required=True)
     parser.add_argument("--scene_id", type=str, default=None)
-    parser.add_argument("--llm_mode", type=str, default="deepseek")
+    parser.add_argument("--llm_mode", type=str, default="ollama")
+    parser.add_argument("--ollama_model", type=str, default=None)
     parser.add_argument("--texture_mode", type=str, choices=["none", "gen_and_map", "diffusion"], default="gen_and_map",
                         help="Texture mode: none | gen_and_map (fast) | diffusion (TEXTurePaper)")
     parser.add_argument("--categories_json", type=str, default='static/categories_metadata.json')
     args = parser.parse_args()
 
     orchestrator = Orchestrator(llm_mode=args.llm_mode,
+                                ollama_model=args.ollama_model,
                                 categories_path=args.categories_json,
                                 texture_mode=args.texture_mode)
 

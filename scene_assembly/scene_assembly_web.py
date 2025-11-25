@@ -183,6 +183,8 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
                 <button id="btn2d" onclick="setView('2d')" class="btn-secondary">📐 2D Layout</button>
                 <button id="btn3d" onclick="setView('3d')" class="btn-secondary">📦 3D Boxes</button>
                 <button id="btnAssets" onclick="setView('assets')" class="btn-secondary">🎨 3D Assets</button>
+                <button id="btnRotate" onclick="rotateView()" class="btn-secondary">🔄 Rotate View</button>
+                <button id="btnSave3D" onclick="saveLayout()" class="btn-secondary">💾 Save 3D Layout</button>
                 <button id="btnSave2D" onclick="save2DLayout()" class="btn-secondary" style="display: none;">💾 Save 2D Layout</button>
             </div>
             <div id="message"></div>
@@ -302,6 +304,9 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
 
                 currentView = assetsLoaded > 0 ? 'assets' : '2d';
                 updateView();
+                computeRoomBounds();
+                updateIsoViews();
+
             } catch (err) {
                 console.error('Error loading scene:', err);
                 document.getElementById('loading').style.display = 'none';
@@ -317,6 +322,153 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
             currentView = view;
             updateView();
         }
+        
+
+let viewIndex = 0;
+
+function rotateView() {
+    if (ISO_VIEWS.length === 0) return;
+
+    viewIndex = (viewIndex + 1) % ISO_VIEWS.length;
+
+    const camTarget = ISO_VIEWS[viewIndex];
+    const lookAt = roomBounds.center.clone();
+
+    const startPos = camera.position.clone();
+    const endPos = new THREE.Vector3(camTarget.x, camTarget.y, camTarget.z);
+
+    const duration = 700;
+    const start = performance.now();
+
+    function animate(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const s = t * t * (3 - 2 * t);  // Smoothstep
+
+        camera.position.lerpVectors(startPos, endPos, s);
+        camera.lookAt(lookAt);
+
+        if (t < 1) requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+}
+
+function getPosition(obj) {
+    if (!obj || !obj.position || !Array.isArray(obj.position)) {
+        console.warn("⚠ Missing or invalid position:", obj);
+        return { x: 0, y: 0, z: 0 };
+    }
+    return {
+        x: obj.position[0],
+        y: obj.position[1],
+        z: obj.position[2]
+    };
+}
+
+function getSizeFromBBox(obj) {
+    if (!obj || !obj.bbox || !Array.isArray(obj.bbox)) {
+        console.warn("⚠ Missing or invalid bbox (size):", obj);
+        return { x: 1, y: 1, z: 1 };
+    }
+    return {
+        x: obj.bbox[0],
+        y: obj.bbox[2], 
+        z: obj.bbox[1] 
+    };
+}
+
+
+// --------------------------------------------------------------------
+// Dynamic edge-based isometric views
+// --------------------------------------------------------------------
+const ISO_VIEWS = [];
+
+function updateIsoViews() {
+    const c = roomBounds.center;
+    const s = roomBounds.size;
+
+    // How far outside the room to place the camera
+    const edgeOffset = Math.max(s.x, s.z) * 0.75;   // closer to edges than before
+
+    // Height for isometric view
+    const isoHeight = Math.max(s.x, s.z) * 0.65;    // slightly above room
+
+    // Top view height
+    const topDownHeight = s.y + Math.max(s.x, s.z); // enough to see entire room
+
+    ISO_VIEWS.length = 0;
+
+    ISO_VIEWS.push(
+        // Front-left corner
+        { x: c.x - edgeOffset, y: isoHeight, z: c.z + edgeOffset },
+
+        // Front-right corner
+        { x: c.x + edgeOffset, y: isoHeight, z: c.z + edgeOffset },
+
+        // Back-left corner
+        { x: c.x - edgeOffset, y: isoHeight, z: c.z - edgeOffset },
+
+        // Back-right corner
+        { x: c.x + edgeOffset, y: isoHeight, z: c.z - edgeOffset },
+
+        // Top-down (exactly centered and zoomed to room)
+        { x: c.x, y: topDownHeight, z: c.z }
+    );
+}
+
+                function saveLayout() {
+    renderer.render(scene, camera);
+    const dataURL = renderer.domElement.toDataURL("image/png");
+
+    const link = document.createElement("a");
+    link.href = dataURL;
+    link.download = "layout.png";
+    link.click();
+}
+
+
+
+// --------------------------------------------------------------------
+// Room Bounds System (used for edge-based isometric camera views)
+// --------------------------------------------------------------------
+let roomBounds = {
+    min: new THREE.Vector3(),
+    max: new THREE.Vector3(),
+    center: new THREE.Vector3(),
+    size: new THREE.Vector3()
+};
+
+function computeRoomBounds() {
+    const min = new THREE.Vector3(Infinity, Infinity, Infinity);
+    const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+
+    jsonData.objects.forEach(obj => {
+// Support BOTH array and dict-style coords
+        const pos = getPosition(obj);
+        const size = getSizeFromBBox(obj);
+        
+        const sx = size.x / 2;
+        const sy = size.y / 2;
+        const sz = size.z / 2;
+
+
+
+        min.x = Math.min(min.x, pos.x - sx);
+        min.y = Math.min(min.y, pos.y - sy);
+        min.z = Math.min(min.z, pos.z - sz);
+
+        max.x = Math.max(max.x, pos.x + sx);
+        max.y = Math.max(max.y, pos.y + sy);
+        max.z = Math.max(max.z, pos.z + sz);
+    });
+
+    roomBounds.min.copy(min);
+    roomBounds.max.copy(max);
+    roomBounds.size.subVectors(max, min);
+    roomBounds.center.addVectors(min, max).multiplyScalar(0.5);
+}
+
+
 
         function updateView() {
             document.getElementById('placeholder').style.display = 'none';
@@ -325,10 +477,11 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
             document.getElementById('btn2d').className = currentView === '2d' ? 'btn-active' : 'btn-secondary';
             document.getElementById('btn3d').className = currentView === '3d' ? 'btn-active' : 'btn-secondary';
             document.getElementById('btnAssets').className = currentView === 'assets' ? 'btn-active' : 'btn-secondary';
-
             // Show save button only in 2D view
             document.getElementById('btnSave2D').style.display = currentView === '2d' ? 'inline-block' : 'none';
+            document.getElementById('btnSave3D').style.display = currentView === 'assets' ? 'inline-block' : 'none';
 
+            
             updateSceneInfo();
 
             if (currentView === '2d') {
@@ -445,8 +598,12 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
             };
 
             jsonData.objects.forEach((obj, idx) => {
-                const x = padding + (obj.position[0] + hw) * scale;
-                const z = padding + (obj.position[2] + hd) * scale;
+const px = Array.isArray(obj.position) ? obj.position[0] : obj.position.x;
+const pz = Array.isArray(obj.position) ? obj.position[2] : obj.position.z;
+
+const x = padding + (px + hw) * scale;
+const z = padding + (pz + hd) * scale;
+
                 const width = obj.bbox[0] * scale;
                 const depth = obj.bbox[1] * scale;
 
@@ -474,27 +631,6 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
                 ctx.strokeRect(-width / 2, -depth / 2, width, depth);
 
                 ctx.restore();
-
-                // Label with background
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-                ctx.shadowBlur = 5;
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 2;
-
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 11px sans-serif';
-                const textWidth = ctx.measureText(obj.id).width;
-                ctx.fillRect(x - textWidth / 2 - 5, z + 8, textWidth + 10, 18);
-
-                ctx.shadowColor = 'transparent';
-
-                ctx.strokeStyle = colors.stroke;
-                ctx.lineWidth = 1;
-                ctx.strokeRect(x - textWidth / 2 - 5, z + 8, textWidth + 10, 18);
-
-                ctx.fillStyle = '#1e293b';
-                ctx.textAlign = 'center';
-                ctx.fillText(obj.id, x, z + 21);
             });
 
             // Legend
@@ -503,6 +639,75 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
             ctx.fillStyle = '#1e293b';
             ctx.fillText(`Room: ${room.w}m × ${room.d}m × ${room.h}m`, 15, 30);
         }
+        
+        const CATEGORY_SCALES = {
+    // Seating - based on chair/sofa mesh sizes, scaled appropriately
+    "chair": { width: 0.46, depth: 0.6, height: 1.2 },
+    "sofa couch lounge": { width: 1.8, depth: 1.5, height: 1.3 },
+    "bench": { width: 1.40, depth: 0.40, height: 0.45 },
+    
+    // Sleeping - bed scaled for proper room proportions
+    "bed": { width: 1.8, depth: 2.0, height: 0.85 },
+    
+    // Tables & Surfaces
+    "table": { width: 1.50, depth: 0.65, height: 1.0 },
+    "piano pianoforte forte-piano": { width: 1.2, depth: 1.6, height: 1.2 },
+    
+    // Storage - scaled up from base mesh
+    "cabinet": { width: 0.69, depth: 0.77, height: 1.2 },
+    "file file cabinet filing cabinet": { width: 0.65, depth: 0.82, height: 1.3 },
+    "bookshelf": { width: 0.63, depth: 0.73, height: 1.6 },
+    
+    // Kitchen Appliances - proportionally scaled
+    "stove": { width: 0.6, depth: 0.6, height: 0.9 },
+    "dishwasher dish washer dishwashing machine": { width: 0.6, depth: 0.6, height: 0.85 },
+    "washer automatic washer washing machine": { width: 0.6, depth: 0.6, height: 0.85 },
+    "microwave microwave oven": { width: 0.5, depth: 0.4, height: 0.4 },
+    
+    // Lighting
+    "lamp": { width: 0.2, depth: 0.2, height: 0.4 },
+    "loudspeaker speaker speaker unit loudspeaker system speaker system": { width: 0.65, depth: 0.74, height: 1.2 },
+    
+    // Transport - from mesh data
+    "motorcycle bike": { width: 0.8, depth: 2.2, height: 1.2 },
+    "bus autobus coach charabanc double-decker jitney motorbus motorcoach omnibus passenger vehi": { width: 2.5, depth: 12.0, height: 3.2 },
+    "car auto automobile machine motorcar": { width: 1.8, depth: 4.5, height: 1.5 },
+    
+    // Small Items - from mesh data
+    "ashcan trash can garbage can wastebin ash bin ash-bin ashbin dustbin trash barrel trash bin": { width: 0.6, depth: 0.6, height: 0.6 },
+    "pot flowerpot": { width: 0.59, depth: 0.57, height: 0.85 },
+    "birdhouse": { width: 0.25, depth: 0.25, height: 0.5 },
+    "mailbox letter box": { width: 0.3, depth: 0.3, height: 1.2 },
+    "bag traveling bag travelling bag grip suitcase": { width: 0.4, depth: 0.2, height: 0.5 },
+    "basket handbasket": { width: 0.35, depth: 0.35, height: 0.5 },
+    "bottle": { width: 0.42, depth: 0.95, height: 0.40 },
+    "pillow": { width: 0.6, depth: 0.4, height: 0.3 },
+    "skateboard": { width: 0.25, depth: 0.8, height: 0.2 },
+    
+    // Special
+    "tower": { width: 5.0, depth: 5.0, height: 30.0 },
+    "printer printing machine": { width: 0.45, depth: 0.45, height: 0.35 },
+    "display video display": { width: 0.81, depth: 0.65, height: 0.5 },
+    
+    // Default fallback
+    "default": { width: 0.8, depth: 0.8, height: 0.8 }
+};
+
+function getStandardScaleForCategory(category) {
+    if (CATEGORY_SCALES[category]) {
+        return CATEGORY_SCALES[category];
+    }
+    
+    // Fallback: check if category is a substring of any known category
+    const normalized = category.toLowerCase().trim();
+    for (const [key, scale] of Object.entries(CATEGORY_SCALES)) {
+        if (key !== "default" && key.toLowerCase().includes(normalized)) {
+            return scale;
+        }
+    }
+    
+    return CATEGORY_SCALES.default;
+}
 
         function parseOBJ(text) {
             const vertices = [];
@@ -538,12 +743,12 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
             return { vertices, normals, uvs, faces };
         }
 
-        function createGeometryFromOBJ(objData) {
+        function createGeometryFromOBJ(objData, targetBbox) {
             const geometry = new THREE.BufferGeometry();
             const positions = [];
             const normalsArray = [];
             const uvsArray = [];
-
+        
             for (let i = 0; i < objData.faces.length; i += 3) {
                 for (let j = 0; j < 3; j++) {
                     const face = objData.faces[i + j];
@@ -564,7 +769,7 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
                     }
                 }
             }
-
+        
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
             if (normalsArray.length > 0) {
                 geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normalsArray, 3));
@@ -574,8 +779,47 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
             if (uvsArray.length > 0) {
                 geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvsArray, 2));
             }
+            
+    geometry.computeBoundingBox();
+    const bbox = geometry.boundingBox;
+    const meshSize = new THREE.Vector3();
+    bbox.getSize(meshSize);
+    const meshMin = bbox.min.clone();
+
+    // Calculate scale factors
+    const scaleX = meshSize.x > 0.001 ? targetBbox.x / meshSize.x : 1;
+    const scaleY = meshSize.y > 0.001 ? targetBbox.y / meshSize.y : 1;
+    const scaleZ = meshSize.z > 0.001 ? targetBbox.z / meshSize.z : 1;
+
+    // Apply scaling to positions
+    const posAttr = geometry.getAttribute('position');
+    for (let i = 0; i < posAttr.count; i++) {
+        const x = posAttr.getX(i);
+        const y = posAttr.getY(i);
+        const z = posAttr.getZ(i);
+        
+        posAttr.setXYZ(i, x * scaleX, y * scaleY, z * scaleZ);
+    }
+    posAttr.needsUpdate = true;
+        
+            // ------------------------------------------
+            // 🚀 GROUNDING FIX: Lift geometry so minY = 0
+            // ------------------------------------------
+            geometry.computeBoundingBox();
+            const minY = geometry.boundingBox.min.y;
+        
+            const pos = geometry.getAttribute('position');
+            for (let i = 0; i < pos.count; i++) {
+                pos.setY(i, pos.getY(i) - minY);
+            }
+            pos.needsUpdate = true;
+            geometry.computeBoundingBox();
+            geometry.computeVertexNormals();
+            // ------------------------------------------
+        
             return geometry;
         }
+
 
         function init3DScene(useAssets) {
             const canvas = document.getElementById('canvas3d');
@@ -631,16 +875,20 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
 
             // Objects
             jsonData.objects.forEach((obj) => {
+                const size = getSizeFromBBox(obj);
                 let mesh;
 
                 if (useAssets && obj.obj_content) {
                     const objData = parseOBJ(obj.obj_content);
-                    const geometry = createGeometryFromOBJ(objData);
+                    const geometry = createGeometryFromOBJ(objData, size);
 
                     let material;
                     if (obj.texture_data) {
                         const texture = new THREE.TextureLoader().load(obj.texture_data);
-                        material = new THREE.MeshPhongMaterial({ map: texture });
+                        material = new THREE.MeshPhongMaterial({ 
+                                map: texture,
+                                side: THREE.DoubleSide // Renders both sides - prevents disappearing!
+                            });
                     } else {
                         material = new THREE.MeshPhongMaterial({ color: 0xcccccc });
                     }
@@ -668,9 +916,11 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
                     mesh.add(edgesMesh);
                 }
 
-                mesh.position.set(obj.position[0], obj.position[1], obj.position[2]);
-                mesh.rotation.y = (obj.rotation_yaw * Math.PI) / 180;
+                const pos = getPosition(obj);
+                mesh.position.set(pos.x, pos.y, pos.z);
 
+                mesh.rotation.y = ((obj.rotation_yaw - 180) * Math.PI) / 180;
+                
                 scene.add(mesh);
 
                 // Label
@@ -678,13 +928,7 @@ class SceneServerHandler(http.server.SimpleHTTPRequestHandler):
                 const context = canvas2d.getContext('2d');
                 canvas2d.width = 256;
                 canvas2d.height = 64;
-                context.fillStyle = '#ffffff';
-                context.fillRect(0, 0, 256, 64);
-                context.fillStyle = '#000000';
-                context.font = 'Bold 24px Arial';
-                context.textAlign = 'center';
-                context.fillText(obj.id, 128, 40);
-
+                
                 const texture = new THREE.CanvasTexture(canvas2d);
                 const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
                 sprite.position.set(0, obj.bbox[2] / 2 + 0.3, 0);

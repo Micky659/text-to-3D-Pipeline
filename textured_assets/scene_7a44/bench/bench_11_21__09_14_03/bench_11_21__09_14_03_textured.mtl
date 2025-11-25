@@ -1,0 +1,7 @@
+# Created by Open3D 
+# object name: bench_11_21__09_14_03_textured
+newmtl bench_11_21__09_14_03_textured_0
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.000 0.000 0.000
+map_Kd bench_11_21__09_14_03_textured_0.png

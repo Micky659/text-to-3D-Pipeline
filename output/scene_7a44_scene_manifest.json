@@ -1,0 +1,280 @@
+{
+  "scene_id": "scene_7a44",
+  "user_input": "A piano against the left wall, a bench in front of it, a chair on the right side with a table beside it, and a lamp above the table.",
+  "texture_method": "gen_and_map",
+  "total_inference": 288.31,
+  "room": {
+    "w": 7.0,
+    "d": 9.0,
+    "h": 3.0,
+    "units": "meters"
+  },
+  "objects": [
+    {
+      "id": "piano_0",
+      "category": "piano pianoforte forte-piano",
+      "bbox": [
+        1.2,
+        1.6,
+        1.2
+      ],
+      "position": [
+        -2.326884419206832,
+        0.0,
+        -0.32169886451366686
+      ],
+      "rotation_yaw": 90.0,
+      "notes": "Placed against left wall (rotation 90\u00b0) to allow clear access from front and rear. Positioned to maintain 0.15m clearance from wall and 0.4m clearance from adjacent objects.",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "classical grand piano with ornate wood finish",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_7a44\\piano pianoforte forte-piano\\piano pianoforte forte-piano_11_21__09_13_10\\piano pianoforte forte-piano_11_21__09_13_10_textured.obj",
+      "metadata": {
+        "bbox": [
+          1.5,
+          2.0,
+          1.2
+        ],
+        "anchor": [
+          -0.0,
+          -0.6,
+          0.1
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 122,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_7a44\\piano pianoforte forte-piano\\piano pianoforte forte-piano_11_21__09_13_10\\texture_11_21__09_15_34.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "bench_0",
+      "category": "bench",
+      "bbox": [1.40, 0.40, 0.45],
+      "position": [
+        -0.7000102986895818,
+        0.0,
+        -0.39165485990554555
+      ],
+      "rotation_yaw": 90.0,
+      "notes": "Positioned in front of piano, aligned with piano's front edge. Rotation 90\u00b0 to face forward. Maintains 0.4m clearance from piano and 0.15m from wall.",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "ornate classical bench with carved wood details",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_7a44\\bench\\bench_11_21__09_14_03\\bench_11_21__09_14_03_textured.obj",
+      "metadata": {
+        "bbox": [
+          1.2,
+          0.4,
+          0.5
+        ],
+        "anchor": [
+          -0.0,
+          -0.2,
+          -0.0
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 228,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_7a44\\bench\\bench_11_21__09_14_03\\texture_11_21__09_15_39.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "chair_0",
+      "category": "chair",
+      "bbox": [0.46, 0.6, 1.2],
+      "position": [
+        2.5,
+        0.0,
+        0.0
+      ],
+      "rotation_yaw": 180.0,
+      "notes": "Placed on right side of room, facing left toward piano. Maintains 0.4m clearance from table and 0.15m from wall.",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "classical ornate chair with carved backrest",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_7a44\\chair\\chair_11_21__09_14_07\\chair_11_21__09_14_07_textured.obj",
+      "metadata": {
+        "bbox": [
+          0.5,
+          0.5,
+          0.9
+        ],
+        "anchor": [
+          -0.0,
+          -0.5,
+          -0.0
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 136,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_7a44\\chair\\chair_11_21__09_14_07\\texture_11_21__09_15_44.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "table_0",
+      "category": "table",
+      "bbox": [1.5, 0.65, 1.0],
+      "position": [
+        2.5,
+        0.0,
+        -1.0
+      ],
+      "rotation_yaw": 180.0,
+      "notes": "Placed next to chair, maintaining 0.3m clearance. Aligned with chair for functional relationship. Rotation 0\u00b0 to face chair.",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "classical ornate wooden table with marble top",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_7a44\\table\\table_11_21__09_14_36\\table_11_21__09_14_36_textured.obj",
+      "metadata": {
+        "bbox": [
+          1.5,
+          0.8,
+          0.8
+        ],
+        "anchor": [
+          0.0,
+          -0.4,
+          -0.0
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 65,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_7a44\\table\\table_11_21__09_14_36\\texture_11_21__09_15_48.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "lamp_0",
+      "category": "lamp",
+      "bbox": [0.6, 0.6, 1.6],
+      "position": [
+        2.9,
+        0.0,
+        -2.3
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "Behind the sofa, aligned with its center. Ensured 0.4m clearance from sofa and 0.15m from wall.",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "modern floor lamp with metallic base",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_5740\\lamp\\lamp_11_21__07_32_57\\lamp_11_21__07_32_57_textured.obj",
+      "metadata": {
+        "bbox": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "anchor": [
+          0.0,
+          -0.8,
+          0.0
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 312,
+        "textured_by": "fast_gen_and_map",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_5740\\lamp\\lamp_11_21__07_32_57\\texture_11_21__07_35_42.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    }
+  ],
+  "metadata": {
+    "scene_init_time": "11_21__09_13_01",
+    "provenance": [
+      {
+        "timestamp": "11_21__09_13_01",
+        "placement_id": "piano_0",
+        "category": "piano pianoforte forte-piano",
+        "violation": "out_of_bounds",
+        "attempted_fix": {
+          "type": "nudge_into_room",
+          "old_pos": [
+            -2.525,
+            -0.3490889475180271
+          ],
+          "new_pos": [
+            -2.326884419206832,
+            -0.32169886451366686
+          ]
+        }
+      },
+      {
+        "timestamp": "11_21__09_13_01",
+        "placement_id": "bench_0",
+        "category": "bench",
+        "violation": "collision",
+        "attempted_fix": {
+          "type": "nudge_away",
+          "from": "piano_0",
+          "dx_dz": {
+            "dx": 0.5499897013104189,
+            "dz": -0.00336577665276667
+          }
+        }
+      },
+      {
+        "timestamp": "11_21__09_15_39",
+        "placement_id": "piano_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_7a44\\piano pianoforte forte-piano\\piano pianoforte forte-piano_11_21__09_13_10\\texture_11_21__09_15_34.png"
+      },
+      {
+        "timestamp": "11_21__09_15_44",
+        "placement_id": "bench_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_7a44\\bench\\bench_11_21__09_14_03\\texture_11_21__09_15_39.png"
+      },
+      {
+        "timestamp": "11_21__09_15_48",
+        "placement_id": "chair_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_7a44\\chair\\chair_11_21__09_14_07\\texture_11_21__09_15_44.png"
+      },
+      {
+        "timestamp": "11_21__09_15_52",
+        "placement_id": "table_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_7a44\\table\\table_11_21__09_14_36\\texture_11_21__09_15_48.png"
+      },
+      {
+        "timestamp": "11_21__09_15_57",
+        "placement_id": "lamp_0",
+        "action": "textured",
+        "method": "gen_and_map",
+        "texture_image": "textured_assets\\scene_7a44\\lamp\\lamp_11_21__09_15_34\\texture_11_21__09_15_52.png"
+      }
+    ],
+    "layout_attempts": 3,
+    "per_module_inference": {
+      "layout": 112.53,
+      "mesh_generation": 153.62,
+      "texture_generation": 22.16
+    }
+  }
+}

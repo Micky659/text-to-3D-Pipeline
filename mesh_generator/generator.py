@@ -1,7 +1,7 @@
 import torch
 from pathlib import Path
 from .config import settings
-from .data_scripts.mesh_render_v2 import save_mesh_for_scene
+from .data_scripts.mesh_render_v2 import save_mesh_for_scene, extract_vertices_faces_from_mesh
 from .utils import save_obj_from_coords, load_mesh, compute_metadata
 from .data_scripts import mesh_render
 from .data_scripts.mesh_render_v2 import save_mesh_for_scene
@@ -11,6 +11,7 @@ import shutil
 import datetime
 import glob
 import trimesh
+import numpy as np
 
 class MeshGenerator:
     def __init__(self,
@@ -81,7 +82,7 @@ class MeshGenerator:
         return None
 
     def generate_asset(self, category: str, text: str = None, scene_id: str = "default_scene",
-                       reuse: bool = True, temperature: float = 0.0) -> dict:
+                       reuse: bool = True, temperature: float = 1.0) -> dict:
         if not self._loaded:
             self._load_models()
 
@@ -102,7 +103,52 @@ class MeshGenerator:
         txt = text or category
         with torch.no_grad():
             print(f"Generating category='{category}' text='{txt}' ...")
-            raw_mesh = self.transformer.generate(texts=[txt], temperature=temperature)
+
+            valid_mesh = False
+            while not valid_mesh:
+                raw_mesh = self.transformer.generate(texts=[txt], temperature=temperature)
+                generated_vertices, faces = extract_vertices_faces_from_mesh(raw_mesh)
+
+                # 2. Basic safety checks
+                if len(generated_vertices) < 3 or len(faces) == 0:
+                    # regenerate
+                    continue
+
+                vertices = np.asarray(generated_vertices, dtype=np.float32)
+                faces = np.asarray(faces, dtype=np.int32)
+
+                # Ensure all face indices are valid
+                if np.any(faces < 0) or np.any(faces >= len(vertices)):
+                    continue
+
+                # 3. Compute geometry
+                try:
+                    face_vertices = vertices[faces]  # (num_faces, 3, 3)
+                except Exception:
+                    continue  # if any weird shape, regenerate
+
+                v0 = face_vertices[:, 0]
+                v1 = face_vertices[:, 1]
+                v2 = face_vertices[:, 2]
+
+                edge1 = v1 - v0
+                edge2 = v2 - v0
+
+                normals = np.cross(edge1, edge2)
+                areas = 0.5 * np.linalg.norm(normals, axis=1)
+
+                # Handle NaNs
+                if np.isnan(areas).any():
+                    continue
+
+                zero_area_faces = int(np.sum(areas < 1e-10))
+                ratio = zero_area_faces / len(faces)
+
+                # 4. Threshold
+                if ratio < 0.20:
+                    valid_mesh = True
+
+
             # Remember: raw_mesh is a coords object or list
             timestamp = datetime.datetime.now().strftime('%m_%d__%H_%M_%S')
             out_obj = scene_dir / f"{category}_{timestamp}.obj"

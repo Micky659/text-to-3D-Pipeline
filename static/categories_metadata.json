@@ -1,529 +1,187 @@
 {
     "motorcycle bike": {
-        "bbox": [
-            0.8,
-            2.2,
-            1.2
-        ],
-        "anchor": [
-            -0.02,
-            -0.6,
-            0.09
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.8, 2.2, 1.2],
+        "anchor": [-0.02, -0.6, 0.09],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "chair": {
-        "bbox": [
-            0.5,
-            0.5,
-            0.95
-        ],
-        "anchor": [
-            0.01,
-            -0.47,
-            -0.02
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.46, 0.6, 1.2],
+        "anchor": [0.01, -0.47, -0.02],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "lamp": {
-        "bbox": [
-            0.4,
-            0.4,
-            1.6
-        ],
-        "anchor": [
-            -0.02,
-            -0.8,
-            0.03
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.6, 0.6, 1.6],
+        "anchor": [-0.02, -0.8, 0.03],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "bus autobus coach charabanc double-decker jitney motorbus motorcoach omnibus passenger vehi": {
-        "bbox": [
-            2.5,
-            12.0,
-            3.2
-        ],
-        "anchor": [
-            -0.38,
-            -1.6,
-            0.16
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [2.5, 12.0, 3.2],
+        "anchor": [-0.38, -1.6, 0.16],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "ashcan trash can garbage can wastebin ash bin ash-bin ashbin dustbin trash barrel trash bin": {
-        "bbox": [
-            0.4,
-            0.2,
-            0.5
-        ],
-        "anchor": [
-            0.01,
-            -0.25,
-            0.01
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.6, 0.6, 0.6],
+        "anchor": [0.01, -0.25, 0.01],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "sofa couch lounge": {
-        "bbox": [
-            2.2,
-            1.0,
-            0.9
-        ],
-        "anchor": [
-            -0.05,
-            -0.45,
-            0.02
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [1.8, 1.5, 1.3],
+        "anchor": [-0.05, -0.45, 0.02],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "bench": {
-        "bbox": [
-            1.2,
-            0.4,
-            0.5
-        ],
-        "anchor": [
-            -0.0,
-            -0.25,
-            0.0
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [1.40, 0.40, 0.45],
+        "anchor": [-0.0, -0.25, 0.0],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "bookshelf": {
-        "bbox": [
-            0.8,
-            0.3,
-            1.8
-        ],
-        "anchor": [
-            -0.01,
-            -0.9,
-            -0.03
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.63, 0.73, 1.6],
+        "anchor": [-0.01, -0.9, -0.03],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "microwave microwave oven": {
-        "bbox": [
-            0.5,
-            0.4,
-            0.3
-        ],
-        "anchor": [
-            -0.0,
-            -0.15,
-            -0.06
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.5, 0.4, 0.4],
+        "anchor": [-0.0, -0.15, -0.06],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "bottle": {
-        "bbox": [
-            0.08,
-            0.08,
-            0.25
-        ],
-        "anchor": [
-            0.0,
-            -0.12,
-            0.0
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.42, 0.95, 0.40],
+        "anchor": [0.0, -0.12, 0.0],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "bag traveling bag travelling bag grip suitcase": {
-        "bbox": [
-            0.4,
-            0.2,
-            0.5
-        ],
-        "anchor": [
-            0.0,
-            -0.25,
-            0.02
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.4, 0.2, 0.5],
+        "anchor": [0.0, -0.25, 0.02],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "pot flowerpot": {
-        "bbox": [
-            0.3,
-            0.3,
-            0.4
-        ],
-        "anchor": [
-            0.01,
-            -0.2,
-            -0.0
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.59, 0.57, 0.85],
+        "anchor": [0.01, -0.2, -0.0],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "loudspeaker speaker speaker unit loudspeaker system speaker system": {
-        "bbox": [
-            0.4,
-            0.4,
-            1.0
-        ],
-        "anchor": [
-            -0.02,
-            -0.5,
-            0.11
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.65, 0.74, 1.2],
+        "anchor": [-0.02, -0.5, 0.11],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "birdhouse": {
-        "bbox": [
-            0.25,
-            0.25,
-            0.3
-        ],
-        "anchor": [
-            -0.0,
-            -0.15,
-            0.1
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.25, 0.25, 0.5],
+        "anchor": [-0.0, -0.15, 0.1],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "file file cabinet filing cabinet": {
-        "bbox": [
-            0.6,
-            0.6,
-            1.2
-        ],
-        "anchor": [
-            -0.04,
-            -0.6,
-            -0.03
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.65, 0.82, 1.3],
+        "anchor": [-0.04, -0.6, -0.03],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "printer printing machine": {
-        "bbox": [
-            0.45,
-            0.45,
-            0.25
-        ],
-        "anchor": [
-            -0.01,
-            -0.12,
-            0.06
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.45, 0.45, 0.35],
+        "anchor": [-0.01, -0.12, 0.06],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "bathtub bathing tub bath tub": {
-        "bbox": [
-            0.8,
-            1.6,
-            0.6
-        ],
-        "anchor": [
-            -0.04,
-            -0.3,
-            -0.03
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.80, 1.60, 0.60],
+        "anchor": [-0.04, -0.3, -0.03],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "piano pianoforte forte-piano": {
-        "bbox": [
-            1.5,
-            2.0,
-            1.2
-        ],
-        "anchor": [
-            -0.0,
-            -0.6,
-            0.06
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [1.2, 1.6, 1.2],
+        "anchor": [-0.0, -0.6, 0.06],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "car auto automobile machine motorcar": {
-        "bbox": [
-            1.8,
-            4.5,
-            1.5
-        ],
-        "anchor": [
-            -0.24,
-            -0.75,
-            0.4
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [1.8, 4.5, 1.5],
+        "anchor": [-0.24, -0.75, 0.4],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "mailbox letter box": {
-        "bbox": [
-            0.3,
-            0.3,
-            1.2
-        ],
-        "anchor": [
-            -0.06,
-            -0.6,
-            0.02
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.3, 0.3, 1.2],
+        "anchor": [-0.06, -0.6, 0.02],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "table": {
-        "bbox": [
-            1.5,
-            0.8,
-            0.75
-        ],
-        "anchor": [
-            0.0,
-            -0.38,
-            0.28
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [1.5, 0.65, 1.0],
+        "anchor": [0.0, -0.38, 0.28],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "tower": {
-        "bbox": [
-            5.0,
-            5.0,
-            30.0
-        ],
-        "anchor": [
-            0.0,
-            -15.0,
-            0.42
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [5.0, 5.0, 30.0],
+        "anchor": [0.0, -15.0, 0.42],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "basket handbasket": {
-        "bbox": [
-            0.35,
-            0.35,
-            0.25
-        ],
-        "anchor": [
-            0.02,
-            -0.12,
-            0.02
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.35, 0.35, 0.5],
+        "anchor": [0.02, -0.12, 0.02],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "stove": {
-        "bbox": [
-            0.6,
-            0.6,
-            0.9
-        ],
-        "anchor": [
-            -0.02,
-            -0.45,
-            0.08
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.6, 0.6, 0.9],
+        "anchor": [-0.02, -0.45, 0.08],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "dishwasher dish washer dishwashing machine": {
-        "bbox": [
-            0.6,
-            0.6,
-            0.85
-        ],
-        "anchor": [
-            0.03,
-            -0.43,
-            -0.12
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.6, 0.6, 0.85],
+        "anchor": [0.03, -0.43, -0.12],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "skateboard": {
-        "bbox": [
-            0.25,
-            0.8,
-            0.12
-        ],
-        "anchor": [
-            -0.0,
-            -0.06,
-            0.07
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.25, 0.8, 0.2],
+        "anchor": [-0.0, -0.06, 0.07],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "washer automatic washer washing machine": {
-        "bbox": [
-            0.6,
-            0.6,
-            0.85
-        ],
-        "anchor": [
-            0.01,
-            -0.42,
-            -0.02
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.6, 0.6, 0.85],
+        "anchor": [0.01, -0.42, -0.02],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "bed": {
-        "bbox": [
-            1.5,
-            2.0,
-            0.6
-        ],
-        "anchor": [
-            -0.0,
-            -0.3,
-            0.03
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [1.8, 2.0, 0.85],
+        "anchor": [-0.0, -0.3, 0.03],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "cabinet": {
-        "bbox": [
-            0.9,
-            0.45,
-            1.2
-        ],
-        "anchor": [
-            0.0,
-            -0.6,
-            -0.0
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.69, 0.77, 1.2],
+        "anchor": [0.0, -0.6, -0.0],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "display video display": {
-        "bbox": [
-            0.6,
-            0.05,
-            0.4
-        ],
-        "anchor": [
-            -0.03,
-            -0.2,
-            0.0
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.81, 0.65, 0.5],
+        "anchor": [-0.03, -0.2, 0.0],
+        "bbox_center": [0.0, 0.0, 0.0]
     },
+
     "pillow": {
-        "bbox": [
-            0.6,
-            0.4,
-            0.15
-        ],
-        "anchor": [
-            -0.1,
-            -0.08,
-            -0.1
-        ],
-        "bbox_center": [
-            0.0,
-            0.0,
-            0.0
-        ]
+        "bbox": [0.6, 0.4, 0.3],
+        "anchor": [-0.1, -0.08, -0.1],
+        "bbox_center": [0.0, 0.0, 0.0]
     }
 }

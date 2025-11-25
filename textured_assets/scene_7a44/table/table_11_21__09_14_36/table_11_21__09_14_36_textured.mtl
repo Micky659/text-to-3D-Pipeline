@@ -1,0 +1,7 @@
+# Created by Open3D 
+# object name: table_11_21__09_14_36_textured
+newmtl table_11_21__09_14_36_textured_0
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.000 0.000 0.000
+map_Kd table_11_21__09_14_36_textured_0.png

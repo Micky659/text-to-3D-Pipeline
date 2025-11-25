@@ -1,0 +1,7 @@
+# Created by Open3D 
+# object name: piano pianoforte forte-piano_11_21__09_13_10_textured
+newmtl piano pianoforte forte-piano_11_21__09_13_10_textured_0
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.000 0.000 0.000
+map_Kd piano pianoforte forte-piano_11_21__09_13_10_textured_0.png

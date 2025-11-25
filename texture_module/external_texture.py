@@ -20,10 +20,18 @@ def run_texturepaper_with_config(cfg_path: str):
     exp_name = cfg_path.stem
     workdir = settings.WORKDIR
     env = os.environ.copy()
-    env["PYTHONPATH"] = workdir  # so Python can find `src`
+    env["PYTHONPATH"] = str(workdir)  # so Python can find `src`
 
     # Run command: python -m scripts.run_texture --config_path=configs/text_guided/bench.yaml
     cmd = settings.TEXTUREPAPER_RUN_CMD.split("-") + ["--config_path", str(cfg_path)]
+    # Construct command properly
+    # cmd = [
+    #     "python", "-m", "scripts.run_texture",
+    #     "--config_path", str(cfg_path)
+    # ]
+
+    print(f"Running TEXTurePaper: {' '.join(cmd)}")
+    print(f"Using PYTHONPATH={env['PYTHONPATH']}")
     # run in shellless mode
     # proc = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True, env=env)
     #
@@ -31,7 +39,7 @@ def run_texturepaper_with_config(cfg_path: str):
     #     raise RuntimeError(f"TEXTurePaper run failed: {proc.returncode}\nstderr:\n{proc.stderr}\nstdout:\n{proc.stdout}")
 
 
-    proc = subprocess.Popen(cmd, cwd=workdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(cmd, cwd=workdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     out_bytes, err_bytes = proc.communicate()
 
     out = out_bytes.decode("utf-8", errors="replace") if isinstance(out_bytes, (bytes, bytearray)) else str(out_bytes)

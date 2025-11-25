@@ -3,6 +3,7 @@ from layout_module.models import Room, SceneManifest
 from layout_module.utils import save_manifest, load_manifest
 from layout_module.asset_registry import load_categories
 from layout_module.config import settings
+from texture_module.generate_textured_assets import _retexture_single_mesh
 from .input_interpreter_agent import InputInterpreterAgent, Interpretation, Intent
 from .layout_planner_agent import LayoutPlannerAgent
 from .scene_editor_agent import SceneEditorAgent
@@ -17,8 +18,8 @@ import os
 
 
 class Orchestrator:
-    def __init__(self, llm_mode, categories_path, texture_mode):
-        self.llm_client = LLMClient(llm_mode=llm_mode)
+    def __init__(self, llm_mode, ollama_model, categories_path, texture_mode):
+        self.llm_client = LLMClient(llm_mode=llm_mode, ollama_model=ollama_model)
         self.interpreter = InputInterpreterAgent(self.llm_client, category_path=categories_path)
         self.layout_planner = LayoutPlannerAgent(self.llm_client, categories=load_categories(categories_path))
         self.mesh_generator = MeshGenerator()
@@ -35,7 +36,7 @@ class Orchestrator:
             if room_dict.get("w") == "auto":
                 room_defaults = {"w": 6.0, "d": 8.0, "h": 3.5}
             else:
-                room_defaults = {"w": float(room_dict.get("w", 6.0)), "d": float(room_dict.get("d", 8.0)),
+                room_defaults = {"w": float(room_dict.get("w", 6.0)) + 1, "d": float(room_dict.get("d", 8.0)) + 1,
                                  "h": float(room_dict.get("h", 3.0))}
             room = Room(**room_defaults)
             req_list = []
@@ -43,14 +44,15 @@ class Orchestrator:
                 for i in range(o.count):
                     req_list.append(o.category)
             relationships = interp.relationships or ""
-            scene_id = scene_id or interp.scene_id or f"scene_{uuid.uuid4().hex[:2]}"
+            scene_id = scene_id or interp.scene_id or f"scene_{uuid.uuid4().hex[:4]}"
             res = self.layout_planner.plan(scene_id, user_text, self.texture_mode, room, req_list, relationships=relationships,
                                            style=interp.style or "default")
             if not res.get("ok"):
                 # failed to produce valid layout
                 return {"status": "error", "reason": "layout_generation_failed", "details": res.get("error")}
-            print("LAYOUT: ", res)
+            print("FINAL LAYOUT: ", res)
             manifest = res["manifest"]
+            print("MANIFEST:", manifest)
 
             layout_end_time = time.time()
             layout_elapsed_time = round(layout_end_time - layout_start_time, 2)
@@ -64,7 +66,7 @@ class Orchestrator:
                 if cat not in unique_cats:
                     print(f"Requesting generation for category: {cat}")
                     try:
-                        asset_info = self.mesh_generator.generate_asset(cat, text=cat, scene_id=scene_id, reuse=True)
+                        asset_info = self.mesh_generator.generate_asset(cat, text=cat, scene_id=scene_id, reuse=False)
                         unique_cats[cat] = asset_info
                     except Exception as e:
                         print("Generation failed for", cat, e)
@@ -118,7 +120,7 @@ class Orchestrator:
             manifest_dict["total_inference"] = elapsed_time
             # Save the manifest JSON
             manifest = SceneManifest.model_validate(manifest_dict)
-            out_path = save_manifest(manifest)
+            out_path = save_manifest(manifest, self.texture_mode)
 
             out_file = out_path.parent / out_path.name
             # with open(out_file, "w") as f:
@@ -128,12 +130,14 @@ class Orchestrator:
 
         elif interp.intent == Intent.EDIT:
             # require scene_id
-            if not interp.scene_id:
+            if not scene_id:
                 return {"status": "error", "reason": "no_scene_id_for_edit"}
             # load existing manifest
-            existing_manifest = load_manifest(Path(settings.OUTPUT_DIR) / f"{interp.scene_id}_scene_manifest.json")
-            edit_instruction = interp.raw_text if hasattr(interp, "raw_text") else interp.user_text
+            existing_manifest = load_manifest(Path(settings.OUTPUT_DIR) / f"scene_{scene_id}_scene_manifest.json")
+            edit_instruction = interp.user_text
+            print(edit_instruction)
             edit_res = self.scene_editor.edit(existing_manifest.model_dump(), edit_instruction)
+            print(edit_res)
             if not edit_res.get("ok"):
                 return {"status": "error", "reason": "edit_failed", "details": edit_res.get("error")}
             updated_manifest = edit_res["manifest"]
@@ -141,9 +145,6 @@ class Orchestrator:
                 updated_manifest["metadata"] = {}
             if "provenance" not in updated_manifest["metadata"]:
                 updated_manifest["metadata"]["provenance"] = []
-
-            scene_dir = Path("raw_meshes") / interp.scene_id
-            scene_dir.mkdir(parents=True, exist_ok=True)
 
             for obj in updated_manifest.get("objects", []):
                 placement_id = obj.get("id")
@@ -155,8 +156,8 @@ class Orchestrator:
                     try:
                         # Use a higher temperature for regeneration to add variation
                         regen_info = self.mesh_generator.generate_asset(obj.get("category"), text=obj.get("category"),
-                                                                        scene_id=interp.scene_id, reuse=False,
-                                                                        temperature=0.0)
+                                                                        scene_id=scene_id, reuse=False,
+                                                                        temperature=0.8 )
                         # Update object asset and metadata with new values
                         new_asset = regen_info.get("mesh_path")
                         new_meta = regen_info.get("metadata", {})
@@ -171,6 +172,22 @@ class Orchestrator:
                             "prev_asset": prev_asset,
                             "new_asset": new_asset
                         })
+
+                        try:
+                            prov_entry, obj = _retexture_single_mesh(obj, self.texture_mode, scene_id)
+                            if prov_entry:
+                                # obj["asset"] is now the textured asset path from texture module
+                                updated_manifest["metadata"]["provenance"].append(prov_entry)
+                        except Exception as e:
+                            obj.setdefault("notes", "")
+                            obj["notes"] += f" | texturing_failed_after_regen: {e}"
+                            updated_manifest["metadata"]["provenance"].append({
+                                "timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'),
+                                "placement_id": placement_id,
+                                "action": "texturing_failed",
+                                "error": str(e)
+                            })
+
                     except Exception as e:
                         # if generation failed, add error provenance and flag note on object
                         obj.setdefault("notes", "")
@@ -184,22 +201,23 @@ class Orchestrator:
 
 
                 # Record texture_input into object metadata and re apply textures
-                if texture_input:
-                    meta = obj.get("metadata", {}) or {}
-                    meta["retexture_input"] = texture_input
-                    obj["metadata"] = meta
-                    updated_manifest = _run_texturing_on_manifest(updated_manifest.model_dump(), texture_mode=self.texture_mode,
-                                                               scene_id=scene_id)
-                    updated_manifest = SceneManifest.model_validate(updated_manifest)
-                    # provenance record for texture request
-                    updated_manifest["metadata"]["provenance"].append({
-                        "timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'),
-                        "placement_id": placement_id,
-                        "action": "texture_requested",
-                        "retexture_input": texture_input
-                    })
+                elif texture_input:
+                    try:
+                        prov_entry, obj = _retexture_single_mesh(obj, self.texture_mode, scene_id)
+                        if prov_entry:
+                            # obj["asset"] is now the textured asset path from texture module
+                            updated_manifest["metadata"]["provenance"].append(prov_entry)
+                    except Exception as e:
+                        obj.setdefault("notes", "")
+                        obj["notes"] += f" | texturing_failed: {e}"
+                        updated_manifest["metadata"]["provenance"].append({
+                            "timestamp": datetime.datetime.now().strftime('%m_%d__%H_%M_%S'),
+                            "placement_id": placement_id,
+                            "action": "texturing_failed",
+                            "error": str(e)
+                        })
 
             # save updated manifest
             scene_manifest_obj = SceneManifest.model_validate(updated_manifest)
-            out_path = save_manifest(scene_manifest_obj)
+            out_path = save_manifest(scene_manifest_obj, self.texture_mode)
             return {"status": "ok", "manifest_path": str(out_path)}

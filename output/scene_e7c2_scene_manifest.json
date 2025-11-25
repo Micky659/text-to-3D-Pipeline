@@ -1,0 +1,263 @@
+{
+  "scene_id": "scene_e7c2",
+  "user_input": "A piano against the left wall, a bench in front of it, a chair on the right side with a table beside it, and a lamp above the table.",
+  "texture_method": "diffusion",
+  "total_inference": 1012.68,
+  "room": {
+    "w": 7.0,
+    "d": 9.0,
+    "h": 3.0,
+    "units": "meters"
+  },
+  "objects": [
+    {
+      "id": "piano_0",
+      "category": "piano pianoforte forte-piano",
+      "bbox": [
+        1.2,
+        1.6,
+        1.2
+      ],
+      "position": [
+        -2.25,
+        0.0,
+        -0.21061739263630683
+      ],
+      "rotation_yaw": 270.0,
+      "notes": "Placed against left wall (rotation 90\u00b0) with 0.15m clearance from wall and 0.4m clearance from bench in front",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "classical grand piano with ornate wood finish",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_e7c2\\piano pianoforte forte-piano\\piano pianoforte forte-piano_11_21__14_38_25\\piano pianoforte forte-piano_11_21__14_42_02_textured.obj",
+      "metadata": {
+        "bbox": [
+          1.5,
+          2.0,
+          1.2
+        ],
+        "anchor": [
+          -0.0,
+          -0.6,
+          0.1
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 122,
+        "textured_by": "TEXTurePaper",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\TEXTurePaper\\experiments\\piano pianoforte forte-piano_11_21__14_40_16\\mesh\\albedo.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "bench_0",
+      "category": "bench",
+      "bbox": [1.40, 0.40, 0.45],
+      "position": [
+        -0.6015057752727158,
+        0.0,
+        -0.4523702622180118
+      ],
+      "rotation_yaw": 90.0,
+      "notes": "Positioned in front of piano, aligned along the same Z-axis, with 0.4m clearance from piano and 0.15m from wall",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "classical wooden bench with carved details",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_e7c2\\bench\\bench_11_21__14_39_36\\bench_11_21__14_43_41_textured.obj",
+      "metadata": {
+        "bbox": [
+          1.2,
+          0.4,
+          0.5
+        ],
+        "anchor": [
+          0.1,
+          -0.2,
+          -0.0
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 294,
+        "textured_by": "TEXTurePaper",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\TEXTurePaper\\experiments\\bench_11_21__14_42_02\\mesh\\albedo.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "chair_0",
+      "category": "chair",
+      "bbox": [0.46, 0.6, 1.2],
+      "position": [
+        1.8,
+        0.0,
+        0.0
+      ],
+      "rotation_yaw": 180.0,
+      "notes": "Placed on right side of room, 0.6m from table, with 0.15m clearance from right wall and 0.4m from table",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "classical ornate chair with carved backrest",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_e7c2\\chair\\chair_11_21__14_39_58\\chair_11_21__14_45_17_textured.obj",
+      "metadata": {
+        "bbox": [
+          0.5,
+          0.5,
+          0.9
+        ],
+        "anchor": [
+          0.0,
+          -0.5,
+          0.0
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 115,
+        "textured_by": "TEXTurePaper",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\TEXTurePaper\\experiments\\chair_11_21__14_43_41\\mesh\\albedo.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "table_0",
+      "category": "table",
+      "bbox": [1.5, 0.65, 1.0],
+      "position": [
+        1.7641287028044732,
+        0.0,
+        -0.8429073077490792
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "Placed next to chair, 0.6m apart, with 0.15m clearance from right wall and 0.4m clearance from chair",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "classical round dining table with marble top",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_e7c2\\table\\table_11_21__14_40_09\\table_11_21__14_46_54_textured.obj",
+      "metadata": {
+        "bbox": [
+          1.5,
+          0.8,
+          0.8
+        ],
+        "anchor": [
+          0.0,
+          -0.4,
+          -0.0
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 258,
+        "textured_by": "TEXTurePaper",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\TEXTurePaper\\experiments\\table_11_21__14_45_17\\mesh\\albedo.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    },
+    {
+      "id": "lamp_0",
+      "category": "lamp",
+      "bbox": [0.6, 0.6, 1.6],
+      "position": [
+        2.9,
+        0.0,
+        0.6598022626808381
+      ],
+      "rotation_yaw": 0.0,
+      "notes": "Positioned directly above table, centered with table's anchor point, with 0.15m clearance from table edges",
+      "snap_policy": "floor|align_front_to_dir",
+      "style_hint": "classical table lamp with ornate shade",
+      "asset": "C:\\Users\\koth_ak\\Akshat's Thesis\\text-to-3D-Pipeline\\textured_assets\\scene_e7c2\\lamp\\lamp_11_21__14_40_16\\lamp_11_21__14_48_31_textured.obj",
+      "metadata": {
+        "bbox": [
+          0.4,
+          0.4,
+          1.6
+        ],
+        "anchor": [
+          -0.1,
+          -0.8,
+          0.1
+        ],
+        "bbox_center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "num_faces": 213,
+        "textured_by": "TEXTurePaper",
+        "texture_image": "C:\\Users\\koth_ak\\Akshat's Thesis\\TEXTurePaper\\experiments\\lamp_11_21__14_46_54\\mesh\\albedo.png"
+      },
+      "regenerate": false,
+      "retexture_input": null
+    }
+  ],
+  "metadata": {
+    "scene_init_time": "11_21__14_38_20",
+    "provenance": [
+      {
+        "timestamp": "11_21__14_38_20",
+        "placement_id": "table_0",
+        "category": "table",
+        "violation": "collision",
+        "attempted_fix": {
+          "type": "nudge_away",
+          "from": "bench_0",
+          "dx_dz": {
+            "dx": 0.4152200601902448,
+            "dz": -0.17347132793522252
+          }
+        }
+      },
+      {
+        "timestamp": "11_21__14_42_02",
+        "placement_id": "piano_0",
+        "action": "textured",
+        "method": "TEXTurePaper",
+        "experiment": "piano pianoforte forte-piano_11_21__14_40_16"
+      },
+      {
+        "timestamp": "11_21__14_43_41",
+        "placement_id": "bench_0",
+        "action": "textured",
+        "method": "TEXTurePaper",
+        "experiment": "bench_11_21__14_42_02"
+      },
+      {
+        "timestamp": "11_21__14_45_17",
+        "placement_id": "chair_0",
+        "action": "textured",
+        "method": "TEXTurePaper",
+        "experiment": "chair_11_21__14_43_41"
+      },
+      {
+        "timestamp": "11_21__14_46_54",
+        "placement_id": "table_0",
+        "action": "textured",
+        "method": "TEXTurePaper",
+        "experiment": "table_11_21__14_45_17"
+      },
+      {
+        "timestamp": "11_21__14_48_31",
+        "placement_id": "lamp_0",
+        "action": "textured",
+        "method": "TEXTurePaper",
+        "experiment": "lamp_11_21__14_46_54"
+      }
+    ],
+    "layout_attempts": 12,
+    "per_module_inference": {
+      "layout": 402.33,
+      "mesh_generation": 115.47,
+      "texture_generation": 494.87
+    }
+  }
+}

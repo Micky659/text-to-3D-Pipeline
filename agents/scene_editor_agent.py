@@ -46,7 +46,7 @@ Rules:
         last_error = None
         while attempt < self.max_retries:
             attempt += 1
-            raw = self.llm.generate(prompt, max_tokens=1600, temperature=0.0)
+            raw = self.llm.generate(prompt, temperature=0.0)
             try:
                 parsed = json.loads(raw)
                 new_manifest = parsed.get("manifest")
@@ -76,6 +76,7 @@ Rules:
                 prompt += ("\n\nThe deterministic verifier reported these problems with the manifest you returned:\n" +
                            json.dumps(last_error, indent=2) +
                            "\nPlease output a corrected manifest JSON that resolves these issues. Ensure each object still includes regenerate and retexture_input fields.")
+                print("Trying again")
                 continue
             except Exception as e:
                 last_error = {"type":"parse_error","message":str(e),"raw": raw}
