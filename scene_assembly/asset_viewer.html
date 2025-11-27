@@ -1,10 +1,854 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBJ + MTL + Texture Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f0;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .header {
+            padding: 1rem;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background-color: #f5f5f0;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .sidebar {
+            width: 320px;
+            background-color: #ffffff;
+            padding: 1rem;
+            overflow-y: auto;
+            border-left: 1px solid #e0e0e0;
+        }
+        .sidebar h2 {
+            font-size: 1.125rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .upload-section {
+            margin-bottom: 1.5rem;
+        }
+        .upload-item {
+            margin-bottom: 1rem;
+        }
+        .upload-item label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            color: #555;
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-input-button {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #374151;
+            transition: all 0.2s;
+        }
+        .file-input-button:hover {
+            background-color: #e5e7eb;
+        }
+        .file-name {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            word-break: break-all;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .info-section {
+            margin-top: 1.5rem;
+            padding: 0.75rem;
+            background-color: #f9fafb;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            color: #555;
+        }
+        .info-section .info-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        .status {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+        .status-success {
+            background-color: #d1fae5;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+        }
+        .status-error {
+            background-color: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+        .instructions {
+            color: #6b7280;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .instructions ol {
+            list-style-position: inside;
+            margin-top: 0.5rem;
+        }
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            background-color: #f9fafb;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .drop-zone:hover {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .drop-zone.drag-over {
+            border-color: #2563eb;
+            background-color: #dbeafe;
+            transform: scale(1.02);
+        }
+        .drop-zone-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .drop-zone-text {
+            color: #374151;
+            font-weight: 500;
+        }
+        .drop-zone-hint {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <div class="container">
+        <div class="header">
+            <h1>OBJ + MTL + Texture Viewer</h1>
+            <div class="button-group">
+                <button id="resetBtn" class="btn btn-secondary">
+                    <span>🔄</span>
+                    Reset View
+                </button>
+                <button id="saveBtn" class="btn btn-primary" disabled>
+                    <span>📸</span>
+                    Capture Image
+                </button>
+            </div>
+        </div>
+        <div class="content">
+            <div id="canvas-container"></div>
+            <div class="sidebar">
+                <h2>Load Files</h2>
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-icon">📦</div>
+                    <div class="drop-zone-text">Drop OBJ, MTL & Texture files here</div>
+                    <div class="drop-zone-hint">or click to browse</div>
+                </div>
+                <div class="upload-section">
+                    <div class="upload-item">
+                        <label>OBJ File (required)</label>
+                        <div class="file-input-wrapper">
+                            <label class="file-input-button" for="objInput">
+                                Choose OBJ File
+                            </label>
+                            <input type="file" id="objInput" accept=".obj">
+                        </div>
+                        <div class="file-name" id="objFileName"></div>
+                    </div>
+                    <div class="upload-item">
+                        <label>MTL File (optional)</label>
+                        <div class="file-input-wrapper">
+                            <label class="file-input-button" for="mtlInput">
+                                Choose MTL File
+                            </label>
+                            <input type="file" id="mtlInput" accept=".mtl">
+                        </div>
+                        <div class="file-name" id="mtlFileName"></div>
+                    </div>
+                    <div class="upload-item">
+                        <label>Texture/PNG File (optional)</label>
+                        <div class="file-input-wrapper">
+                            <label class="file-input-button" for="textureInput">
+                                Choose Texture File
+                            </label>
+                            <input type="file" id="textureInput" accept=".png,.jpg,.jpeg">
+                        </div>
+                        <div class="file-name" id="textureFileName"></div>
+                    </div>
+                </div>
+                <div id="statusContainer"></div>
+                <div class="info-section">
+                    <div class="info-title">Instructions:</div>
+                    <div class="instructions">
+                        <ol>
+                            <li>Drop all files at once in the drop zone, or select individually</li>
+                            <li>OBJ file is required, MTL and texture are optional</li>
+                            <li>Drag to rotate the model</li>
+                            <li>Scroll to zoom in/out</li>
+                            <li>Click "Capture Image" to save a cropped snapshot</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let rotation = { x: 0, y: 0 };
+        let mesh = null;
+        let objData = null;
+        let mtlData = null;
+        let textureData = null;
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f0);
+
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(3, 2, 3);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                preserveDrawingBuffer: true,
+                alpha: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight1.position.set(5, 5, 5);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            directionalLight2.position.set(-5, 3, -5);
+            scene.add(directionalLight2);
+
+            // Mouse controls
+            const canvas = renderer.domElement;
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('wheel', handleWheel);
+
+            // Window resize
+            window.addEventListener('resize', handleResize);
+
+            // Animation loop
+            animate();
+        }
+
+        function handleMouseDown(e) {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+
+            const deltaX = e.clientX - previousMousePosition.x;
+            const deltaY = e.clientY - previousMousePosition.y;
+
+            rotation.y += deltaX * 0.01;
+            rotation.x += deltaY * 0.01;
+
+            const radius = Math.sqrt(
+                camera.position.x ** 2 +
+                camera.position.y ** 2 +
+                camera.position.z ** 2
+            );
+
+            camera.position.x = radius * Math.sin(rotation.y) * Math.cos(rotation.x);
+            camera.position.y = radius * Math.sin(rotation.x);
+            camera.position.z = radius * Math.cos(rotation.y) * Math.cos(rotation.x);
+
+            camera.lookAt(0, 0, 0);
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            const zoomSpeed = 0.1;
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            camera.position.addScaledVector(direction, -e.deltaY * zoomSpeed * 0.01);
+        }
+
+        function handleResize() {
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        function parseOBJ(text) {
+            const vertices = [];
+            const normals = [];
+            const uvs = [];
+            const faces = [];
+            const lines = text.split('\n');
+
+            for (const line of lines) {
+                const parts = line.trim().split(/\s+/);
+                if (parts[0] === 'v') {
+                    vertices.push([
+                        parseFloat(parts[1]),
+                        parseFloat(parts[2]),
+                        parseFloat(parts[3])
+                    ]);
+                } else if (parts[0] === 'vn') {
+                    normals.push([
+                        parseFloat(parts[1]),
+                        parseFloat(parts[2]),
+                        parseFloat(parts[3])
+                    ]);
+                } else if (parts[0] === 'vt') {
+                    uvs.push([
+                        parseFloat(parts[1]),
+                        parseFloat(parts[2])
+                    ]);
+                } else if (parts[0] === 'f') {
+                    const face = parts.slice(1).map(p => {
+                        const indices = p.split('/');
+                        return {
+                            v: parseInt(indices[0]) - 1,
+                            vt: indices[1] ? parseInt(indices[1]) - 1 : null,
+                            vn: indices[2] ? parseInt(indices[2]) - 1 : null
+                        };
+                    });
+                    if (face.length >= 3) {
+                        faces.push(face);
+                    }
+                }
+            }
+
+            return { vertices, normals, uvs, faces };
+        }
+
+        function parseMTL(text) {
+            const materials = {};
+            let currentMaterial = null;
+            const lines = text.split('\n');
+
+            for (const line of lines) {
+                const parts = line.trim().split(/\s+/);
+                if (parts[0] === 'newmtl') {
+                    currentMaterial = parts[1];
+                    materials[currentMaterial] = {};
+                } else if (currentMaterial) {
+                    if (parts[0] === 'map_Kd') {
+                        materials[currentMaterial].map = parts[1];
+                    } else if (parts[0] === 'Kd') {
+                        materials[currentMaterial].color = [
+                            parseFloat(parts[1]),
+                            parseFloat(parts[2]),
+                            parseFloat(parts[3])
+                        ];
+                    }
+                }
+            }
+
+            return materials;
+        }
+
+        function buildGeometry(objData) {
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const normals = [];
+            const uvCoords = [];
+
+            for (const face of objData.faces) {
+                if (face.length === 3) {
+                    for (let i = 0; i < 3; i++) {
+                        const vertexIndex = face[i].v;
+                        positions.push(...objData.vertices[vertexIndex]);
+
+                        if (face[i].vn !== null && objData.normals[face[i].vn]) {
+                            normals.push(...objData.normals[face[i].vn]);
+                        }
+
+                        if (face[i].vt !== null && objData.uvs[face[i].vt]) {
+                            uvCoords.push(...objData.uvs[face[i].vt]);
+                        }
+                    }
+                } else if (face.length === 4) {
+                    // Triangulate quad
+                    const indices = [0, 1, 2, 0, 2, 3];
+                    for (const i of indices) {
+                        const vertexIndex = face[i].v;
+                        positions.push(...objData.vertices[vertexIndex]);
+
+                        if (face[i].vn !== null && objData.normals[face[i].vn]) {
+                            normals.push(...objData.normals[face[i].vn]);
+                        }
+
+                        if (face[i].vt !== null && objData.uvs[face[i].vt]) {
+                            uvCoords.push(...objData.uvs[face[i].vt]);
+                        }
+                    }
+                }
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+
+            if (normals.length > 0) {
+                geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
+            } else {
+                geometry.computeVertexNormals();
+            }
+
+            if (uvCoords.length > 0) {
+                geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uvCoords), 2));
+            }
+
+            return geometry;
+        }
+
+        function loadModel() {
+            if (!objData) return;
+
+            // Remove old mesh
+            if (mesh) {
+                scene.remove(mesh);
+                if (mesh.geometry) mesh.geometry.dispose();
+                if (mesh.material) {
+                    if (mesh.material.map) mesh.material.map.dispose();
+                    mesh.material.dispose();
+                }
+                mesh = null;
+            }
+
+            try {
+                const geometry = buildGeometry(objData);
+
+                // Create material
+                let material;
+                if (textureData) {
+                    const texture = new THREE.TextureLoader().load(textureData);
+                    material = new THREE.MeshStandardMaterial({
+                        map: texture,
+                        side: THREE.DoubleSide
+                    });
+                } else {
+                    material = new THREE.MeshStandardMaterial({
+                        color: 0xcccccc,
+                        side: THREE.DoubleSide
+                    });
+                }
+
+                mesh = new THREE.Mesh(geometry, material);
+                scene.add(mesh);
+
+                // Calculate bounding box for camera
+                geometry.computeBoundingBox();
+                const bbox = geometry.boundingBox;
+                const size = new THREE.Vector3();
+                bbox.getSize(size);
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const distance = maxDim * 2;
+
+                camera.position.set(distance * 0.7, distance * 0.5, distance * 0.7);
+                camera.lookAt(0, 0, 0);
+
+                // Update rotation tracking
+                const radius = Math.sqrt(
+                    camera.position.x ** 2 +
+                    camera.position.y ** 2 +
+                    camera.position.z ** 2
+                );
+                rotation.y = Math.atan2(camera.position.x, camera.position.z);
+                rotation.x = Math.asin(camera.position.y / radius);
+
+                document.getElementById('saveBtn').disabled = false;
+                showStatus('Model loaded successfully!', 'success');
+            } catch (err) {
+                showStatus('Error loading model: ' + err.message, 'error');
+                console.error('Error loading model:', err);
+            }
+        }
+
+        function showStatus(message, type) {
+            const container = document.getElementById('statusContainer');
+            container.innerHTML = `<div class="status status-${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 3000);
+        }
+
+        function resetCamera() {
+            if (mesh) {
+                const geometry = mesh.geometry;
+                geometry.computeBoundingBox();
+                const bbox = geometry.boundingBox;
+                const size = new THREE.Vector3();
+                bbox.getSize(size);
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const distance = maxDim * 2;
+
+                camera.position.set(distance * 0.7, distance * 0.5, distance * 0.7);
+                camera.lookAt(0, 0, 0);
+
+                const radius = Math.sqrt(
+                    camera.position.x ** 2 +
+                    camera.position.y ** 2 +
+                    camera.position.z ** 2
+                );
+                rotation.y = Math.atan2(camera.position.x, camera.position.z);
+                rotation.x = Math.asin(camera.position.y / radius);
+            }
+        }
+
+        function captureImage() {
+            if (!mesh) {
+                alert('No model loaded to capture!');
+                return;
+            }
+
+            // Store original size
+            const originalWidth = renderer.domElement.width;
+            const originalHeight = renderer.domElement.height;
+
+            // Set high resolution (4x the display size)
+            const scale = 4;
+            const highResWidth = originalWidth * scale;
+            const highResHeight = originalHeight * scale;
+
+            // Temporarily resize renderer for high-res capture
+            renderer.setSize(highResWidth / window.devicePixelRatio, highResHeight / window.devicePixelRatio);
+            camera.aspect = highResWidth / highResHeight;
+            camera.updateProjectionMatrix();
+
+            // Render at high resolution
+            renderer.render(scene, camera);
+
+            const canvas = renderer.domElement;
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Calculate bounding box in screen space
+            const bbox = new THREE.Box3().setFromObject(mesh);
+            const corners = [
+                new THREE.Vector3(bbox.min.x, bbox.min.y, bbox.min.z),
+                new THREE.Vector3(bbox.min.x, bbox.min.y, bbox.max.z),
+                new THREE.Vector3(bbox.min.x, bbox.max.y, bbox.min.z),
+                new THREE.Vector3(bbox.min.x, bbox.max.y, bbox.max.z),
+                new THREE.Vector3(bbox.max.x, bbox.min.y, bbox.min.z),
+                new THREE.Vector3(bbox.max.x, bbox.min.y, bbox.max.z),
+                new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.min.z),
+                new THREE.Vector3(bbox.max.x, bbox.max.y, bbox.max.z)
+            ];
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+            corners.forEach(corner => {
+                const projected = corner.project(camera);
+                const x = (projected.x + 1) / 2 * canvas.width;
+                const y = (1 - projected.y) / 2 * canvas.height;
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            });
+
+            // Add padding (10% on each side)
+            const padding = Math.max((maxX - minX), (maxY - minY)) * 0.1;
+            minX = Math.max(0, minX - padding);
+            minY = Math.max(0, minY - padding);
+            maxX = Math.min(canvas.width, maxX + padding);
+            maxY = Math.min(canvas.height, maxY + padding);
+
+            const cropWidth = maxX - minX;
+            const cropHeight = maxY - minY;
+
+            tempCanvas.width = cropWidth;
+            tempCanvas.height = cropHeight;
+
+            // Draw cropped portion
+            tempCtx.drawImage(
+                canvas,
+                minX, minY, cropWidth, cropHeight,
+                0, 0, cropWidth, cropHeight
+            );
+
+            // Restore original size
+            renderer.setSize(originalWidth / window.devicePixelRatio, originalHeight / window.devicePixelRatio);
+            camera.aspect = originalWidth / originalHeight;
+            camera.updateProjectionMatrix();
+            renderer.render(scene, camera);
+
+            // Download with maximum quality
+            tempCanvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'model-capture-' + new Date().getTime() + '.png';
+                link.click();
+                URL.revokeObjectURL(url);
+            }, 'image/png', 1.0);
+        }
+
+        // File input handlers
+        document.getElementById('objInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('objFileName').textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    objData = parseOBJ(e.target.result);
+                    loadModel();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.getElementById('mtlInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('mtlFileName').textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    mtlData = parseMTL(e.target.result);
+                    if (objData) loadModel();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.getElementById('textureInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('textureFileName').textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    textureData = e.target.result;
+                    if (objData) loadModel();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', resetCamera);
+        document.getElementById('saveBtn').addEventListener('click', captureImage);
+
+        // Drop zone functionality
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('click', function() {
+            document.getElementById('objInput').click();
+        });
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+
+            const files = Array.from(e.dataTransfer.files);
+            handleMultipleFiles(files);
+        });
+
+        function handleMultipleFiles(files) {
+            // Clear previous data
+            objData = null;
+            mtlData = null;
+            textureData = null;
+
+            // Clear file names
+            document.getElementById('objFileName').textContent = '';
+            document.getElementById('mtlFileName').textContent = '';
+            document.getElementById('textureFileName').textContent = '';
+
+            let objFile = null;
+            let mtlFile = null;
+            let textureFile = null;
+
+            // Categorize files by extension
+            files.forEach(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (ext === 'obj') {
+                    objFile = file;
+                } else if (ext === 'mtl') {
+                    mtlFile = file;
+                } else if (ext === 'png' || ext === 'jpg' || ext === 'jpeg') {
+                    textureFile = file;
+                }
+            });
+
+            let loadedCount = 0;
+            const totalToLoad = (objFile ? 1 : 0) + (mtlFile ? 1 : 0) + (textureFile ? 1 : 0);
+
+            function checkAndLoad() {
+                loadedCount++;
+                if (loadedCount === totalToLoad && objData) {
+                    loadModel();
+                }
+            }
+
+            // Load OBJ
+            if (objFile) {
+                document.getElementById('objFileName').textContent = objFile.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    objData = parseOBJ(e.target.result);
+                    checkAndLoad();
+                };
+                reader.readAsText(objFile);
+            } else {
+                showStatus('No OBJ file found. Please include an OBJ file.', 'error');
+                return;
+            }
+
+            // Load MTL
+            if (mtlFile) {
+                document.getElementById('mtlFileName').textContent = mtlFile.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    mtlData = parseMTL(e.target.result);
+                    checkAndLoad();
+                };
+                reader.readAsText(mtlFile);
+            }
+
+            // Load Texture
+            if (textureFile) {
+                document.getElementById('textureFileName').textContent = textureFile.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    textureData = e.target.result;
+                    checkAndLoad();
+                };
+                reader.readAsDataURL(textureFile);
+            }
+        }
+
+        // Initialize
+        init();
+    </script>
 </body>
 </html>
